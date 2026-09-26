@@ -1,0 +1,246 @@
+// हरिtima — database schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum VerificationStatus {
+  VERIFIED
+  PENDING
+  REJECTED
+}
+
+enum SourceType {
+  CLASSICAL_AYURVEDIC_TEXT
+  GOVERNMENT_PUBLICATION
+  UNIVERSITY_PUBLICATION
+  BOTANICAL_REFERENCE
+  RESEARCH_PUBLICATION
+}
+
+enum PlantType {
+  TREE
+  SHRUB
+  HERB
+  CLIMBER
+  GRASS
+  SUCCULENT
+  OTHER
+}
+
+enum Availability {
+  AVAILABLE
+  SEASONAL
+  LIMITED
+  NOT_ON_CAMPUS
+}
+
+model User {
+  id            String             @id @default(cuid())
+  name          String?
+  email         String             @unique
+  passwordHash  String
+  role          Role               @default(USER)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  conversations ChatConversation[]
+  feedback      Feedback[]
+  auditLogs     AuditLog[]
+}
+
+model PlantCategory {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nameEn    String
+  nameHi    String
+  icon      String?  // lucide icon name
+  color     String?  // hex used for map markers
+  plants    Plant[]
+  createdAt DateTime @default(now())
+}
+
+model Plant {
+  id                  String               @id @default(cuid())
+  slug                String               @unique
+  commonName          String
+  scientificName      String
+  hindiName           String?
+  sanskritName        String?
+  otherNames          String[]
+  family              String?
+  plantType           PlantType            @default(OTHER)
+  availability        Availability         @default(AVAILABLE)
+  description         String
+  descriptionHi       String?
+  ayurvedicProperties String? // e.g. Rasa, Guna, Virya, Vipaka — as documented
+  traditionalUses     String[]
+  traditionalUsesHi   String[]
+  plantParts          String[]
+  preparation         String?
+  cultivation         String?
+  precautions         String?
+  imageUrl            String?
+  imageAlt            String?
+  featured            Boolean              @default(false)
+  categories          PlantCategory[]
+  locations           PlantLocation[]
+  references          AyurvedicReference[]
+  benefits            PlantBenefit[]
+  knowledgeDocs       KnowledgeDocument[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@index([commonName])
+  @@index([scientificName])
+}
+
+model PlantLocation {
+  id                  String   @id @default(cuid())
+  plantId             String
+  plant               Plant    @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  latitude            Float
+  longitude           Float
+  isApproximate       Boolean  @default(true)
+  campusArea          String
+  locationDescription String?
+  landmark            String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([plantId])
+  @@index([campusArea])
+}
+
+model AyurvedicReference {
+  id                 String             @id @default(cuid())
+  plantId            String
+  plant              Plant              @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  textName           String
+  author             String?
+  chapter            String?
+  section            String?
+  verse              String?
+  citation           String
+  referenceUrl       String?
+  sourceType         SourceType
+  verificationStatus VerificationStatus @default(PENDING)
+  verifiedBy         String?
+  verifiedAt         DateTime?
+  notes              String?
+  benefits           PlantBenefit[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([plantId, verificationStatus])
+}
+
+// A single documented traditional association (e.g. "sleep", "digestion") linked to its reference.
+model PlantBenefit {
+  id          String              @id @default(cuid())
+  plantId     String
+  plant       Plant               @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  concern     String // normalised keyword, e.g. "sleep"
+  concernHi   String?
+  description String
+  plantPart   String?
+  referenceId String?
+  reference   AyurvedicReference? @relation(fields: [referenceId], references: [id], onDelete: SetNull)
+  createdAt   DateTime            @default(now())
+
+  @@index([concern])
+}
+
+model Mantra {
+  id                 String             @id @default(cuid())
+  title              String
+  sanskritText       String
+  transliteration    String?
+  hindiTranslation   String
+  englishTranslation String
+  meaning            String?
+  source             String // e.g. "Rigveda 3.62.10"
+  verificationStatus VerificationStatus @default(PENDING)
+  category           String // Nature, Peace, Health, Environment, Knowledge, Well-being
+  audioUrl           String?
+  featured           Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model ChatConversation {
+  id        String        @id @default(cuid())
+  userId    String?
+  user      User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  messages  ChatMessage[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String // "user" | "assistant"
+  content        String
+  payload        Json? // structured answer: plants, references, locations
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId])
+}
+
+// Chunks used by the RAG retriever. Rebuilt from Plant + VERIFIED references.
+model KnowledgeDocument {
+  id          String   @id @default(cuid())
+  plantId     String?
+  plant       Plant?   @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  referenceId String?
+  kind        String // "plant" | "use" | "reference"
+  title       String
+  content     String
+  embedding   Float[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([plantId])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name      String
+  email     String
+  subject   String
+  message   String
+  resolved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String // CREATE | UPDATE | DELETE | ...
+  entity    String
+  entityId  String?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, createdAt])
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

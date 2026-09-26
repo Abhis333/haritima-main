@@ -1,0 +1,54 @@
+{
+  "name": "haritima",
+  "version": "1.0.0",
+  "private": true,
+  "description": "हरिtima – Plant Identification, Recommendation and Benefits for Dev Sanskriti Vishwavidyalaya",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
+    "create-admin": "tsx --env-file=.env scripts/create-admin.ts",
+    "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "@radix-ui/react-slot": "^1.2.3",
+    "bcryptjs": "^3.0.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.0",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.577.0",
+    "next": "15.5.26",
+    "next-auth": "5.0.0-beta.32",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-leaflet": "^5.0.0",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
+    "@tailwindcss/postcss": "^4.1.11",
+    "@types/leaflet": "^1.9.20",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.26",
+    "prisma": "6.19.3",
+    "tailwindcss": "^4.1.11",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0"
+  }
+}
