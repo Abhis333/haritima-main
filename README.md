@@ -122,3 +122,4 @@ The in-memory rate limiter is per-instance; for heavy production traffic swap it
 - **Photos:** upload real campus photos for each plant (Admin → Plants → Edit). A botanical placeholder is shown until then.
 - The chatbot is educational only and never gives diagnosis or treatment.
 "# Panda" 
+"# Panda" 
