@@ -121,3 +121,4 @@ The in-memory rate limiter is per-instance; for heavy production traffic swap it
 - **References:** all seed references are `PENDING` — "Reference pending verification". Verify each against the original text (with Ayurveda faculty), fill text/chapter/verse, then mark `VERIFIED`. Never enter a citation you have not checked.
 - **Photos:** upload real campus photos for each plant (Admin → Plants → Edit). A botanical placeholder is shown until then.
 - The chatbot is educational only and never gives diagnosis or treatment.
+"# Panda" 
