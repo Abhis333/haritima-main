@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Loader2, RefreshCw, Trash2 } from "lucide-react";
+import { Loader2, Printer, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Select } from "../ui/select";
 
@@ -82,5 +82,13 @@ export function ReindexButton() {
       </Button>
       {msg && <p role="status" className="text-sm text-muted-foreground">{msg}</p>}
     </div>
+  );
+}
+
+export function PrintButton({ label = "Print" }: { label?: string }) {
+  return (
+    <Button className="print:hidden" onClick={() => window.print()}>
+      <Printer /> {label}
+    </Button>
   );
 }

@@ -26,7 +26,7 @@ type Row = Record<string, unknown> & { id: string };
 
 const get = (row: Row, path: string) => path.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | null)?.[k], row);
 
-export function ResourceManager({ title, endpoint, fields, columns, rows, defaults = {}, searchKeys = [] }: {
+export function ResourceManager({ title, endpoint, fields, columns, rows, defaults = {}, searchKeys = [], formExtras }: {
   title: string;
   endpoint: string;
   fields: Field[];
@@ -34,6 +34,8 @@ export function ResourceManager({ title, endpoint, fields, columns, rows, defaul
   rows: Row[];
   defaults?: Record<string, unknown>;
   searchKeys?: string[];
+  /** Rendered inside the create/edit form, below the fields (e.g. a helper that fills inputs). */
+  formExtras?: React.ReactNode;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState<Row | "new" | null>(null);
@@ -126,6 +128,7 @@ export function ResourceManager({ title, endpoint, fields, columns, rows, defaul
               );
             })}
           </div>
+          {formExtras}
           {error && <p role="alert" className="mt-4 text-[#8a2e22]">{error}</p>}
           <div className="mt-5 flex gap-2">
             <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save"}</Button>

@@ -5,7 +5,7 @@ Traditional uses are tied to textual sources, and a source counts as trusted onl
 ## Files
 - Page: `app/(public)/ayurveda/page.tsx` (counts of verified and pending references, benefit concerns grouped with plant counts)
 - API: `app/api/references/route.ts`, `app/api/references/[id]/route.ts`, `app/api/benefits/route.ts`, `app/api/benefits/[id]/route.ts`
-- Admin: `app/admin/references/page.tsx`, `app/admin/knowledge/page.tsx` (benefits editor)
+- Admin: `app/admin/references/page.tsx`, `app/admin/knowledge/page.tsx` (benefits editor), `app/admin/references/print/page.tsx` (printable verification sheet: PENDING references by default, `?status=all` for every status; one block per reference with the plant, linked associations, stored values in grey, blanks for edition/chapter/verse/page, outcome tick boxes and reviewer name/designation/signature/date). The sheet only prints; status changes are still made in the references editor.
 - Validation: `referenceSchema`, `benefitSchema` in `lib/validation.ts`
 
 ## Data

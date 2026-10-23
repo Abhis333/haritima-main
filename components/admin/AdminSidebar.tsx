@@ -45,13 +45,13 @@ export function AdminSidebar({ userName }: { userName: string }) {
   );
   return (
     <>
-      <div className="flex items-center justify-between border-b border-parch bg-sandal px-4 py-3 lg:hidden">
+      <div className="flex items-center justify-between border-b border-parch bg-sandal px-4 py-3 lg:hidden print:hidden">
         <Link href="/"><Logo size="sm" /></Link>
         <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="rounded p-2 text-forest" aria-label="Admin menu">
           {open ? <X /> : <Menu />}
         </button>
       </div>
-      <aside className={cn("bg-forest-deep p-4 text-sandal lg:sticky lg:top-0 lg:block lg:h-screen lg:w-64 lg:shrink-0", open ? "block" : "hidden")}>
+      <aside className={cn("bg-forest-deep p-4 text-sandal lg:sticky lg:top-0 lg:block lg:h-screen lg:w-64 lg:shrink-0 print:hidden", open ? "block" : "hidden")}>
         <Link href="/" className="mb-6 hidden rounded-md bg-sandal px-3 py-2 lg:inline-block"><Logo size="sm" /></Link>
         {nav}
         <p className="mt-8 border-t border-white/10 pt-4 text-sm text-sandal/60">Signed in as {userName}</p>

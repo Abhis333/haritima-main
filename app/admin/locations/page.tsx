@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { ResourceManager } from "@/components/admin/ResourceManager";
+import { LocateButton } from "@/components/admin/LocateButton";
 
 export default async function AdminLocations() {
   const [rows, plants] = await Promise.all([
@@ -14,6 +15,7 @@ export default async function AdminLocations() {
         rows={rows}
         searchKeys={["plant.commonName", "campusArea", "landmark"]}
         defaults={{ isApproximate: true }}
+        formExtras={<LocateButton />}
         columns={[
           { key: "plant.commonName", label: "Plant" },
           { key: "campusArea", label: "Campus area" },
@@ -33,7 +35,9 @@ export default async function AdminLocations() {
         ]}
       />
       <p className="mt-4 max-w-2xl text-sm text-muted-foreground">
-        Tip: stand next to the plant, open Google Maps, long-press your blue dot and copy the coordinates. Untick “approximate” only for surveyed points.
+        Surveying on campus: open this page on your phone (the deployed https site), stand next to the plant, then Add or Edit and tap
+        “Use my current location”. Readings within ±20 m untick “approximate” automatically. Without a phone, long-press your blue dot in
+        Google Maps and copy the coordinates; untick “approximate” only for surveyed points.
       </p>
     </>
   );

@@ -7,7 +7,7 @@ An interactive Leaflet / OpenStreetMap map with every documented plant pinned to
 - Components: `components/PlantMap.tsx` (Leaflet, exports the `MapPoint` type), `components/PlantMapLoader.tsx` (`next/dynamic` with `ssr: false`, because Leaflet needs `window`)
 - Data: `lib/map-data.ts` (`getMapPoints(lang)`, which flattens locations, plants and first categories into `MapPoint[]`)
 - API: `app/api/locations/route.ts` (GET, optional `?plantId=`; admin POST), `app/api/locations/[id]/route.ts` (admin PUT/DELETE through `adminCrud`, with re-indexing)
-- Admin: `app/admin/locations/page.tsx`
+- Admin: `app/admin/locations/page.tsx`. Its form includes `components/admin/LocateButton.tsx` (passed through `ResourceManager`'s `formExtras` slot): "Use my current location" watches the device GPS for up to 15 s, keeps the most accurate reading, fills latitude/longitude (6 decimals) and unticks `isApproximate` only when accuracy is ±20 m or better. It needs a secure context (HTTPS or localhost); `next.config.ts` allows `geolocation=(self)`.
 
 ## Data
 - `PlantLocation`: `plantId`, `latitude`, `longitude`, `isApproximate` (default `true`), `campusArea`, `locationDescription`, `landmark`. It is deleted when its plant is deleted (cascade).
