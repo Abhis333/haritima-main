@@ -14,7 +14,7 @@ function headers() {
 }
 
 export async function generateJSON<T>(system: string, user: string): Promise<T> {
-  const model = process.env.AI_CHAT_MODEL || "gemini-2.5-flash";
+  const model = process.env.AI_CHAT_MODEL || "gemini-3.1-flash-lite";
   const res = await fetch(`${BASE}/models/${encodeURIComponent(model)}:generateContent`, {
     method: "POST",
     headers: headers(),

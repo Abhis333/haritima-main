@@ -76,7 +76,7 @@ npm run dev                  # http://localhost:3000
 | `AUTH_SECRET` | ✅ | `npx auth secret` or `openssl rand -base64 32` |
 | `AUTH_TRUST_HOST` | ✅ on Vercel | `true` |
 | `AI_API_KEY` | recommended | https://aistudio.google.com/apikey |
-| `AI_CHAT_MODEL` / `AI_EMBEDDING_MODEL` | optional | defaults `gemini-2.5-flash` / `gemini-embedding-001` |
+| `AI_CHAT_MODEL` / `AI_EMBEDDING_MODEL` | optional | defaults `gemini-3.1-flash-lite` / `gemini-embedding-001` |
 | `PLANTNET_API_KEY` | for /identify | https://my.plantnet.org |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | for uploads | Cloudinary dashboard |
 | `NEXT_PUBLIC_MAP_URL` | optional | tile URL; defaults to OpenStreetMap |
