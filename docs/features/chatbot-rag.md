@@ -6,7 +6,7 @@ An educational Q&A assistant that answers only from the Haritima database.
 - UI: `app/(public)/chatbot/page.tsx`, `components/Chatbot.tsx` (posts to `/api/chat`), `components/FloatingChat.tsx` (a floating launcher mounted in `app/(public)/layout.tsx`)
 - API: `app/api/chat/route.ts` (`maxDuration = 30`), `app/api/knowledge/reindex/route.ts` (admin, `maxDuration = 60`)
 - Logic: `lib/chat.ts` (`answerQuestion`, disclaimer and fallback texts), `lib/rag.ts` (`indexPlant`, `reindexAll`, `retrievePlantIds`), `lib/ai.ts` (Gemini REST: `generateJSON`, `embed`, `cosine`), `lib/search.ts`
-- Admin: `app/admin/knowledge/page.tsx` (chunk and embedding counts, benefits editor, reindex button)
+- Admin: `app/admin/knowledge/page.tsx` (chunk and embedding counts, benefits editor, reindex button), `app/admin/evaluation/page.tsx` (evaluation, see below)
 
 ## Pipeline
 1. **Indexing** (`indexPlant`): builds these chunks: one `plant` summary, one `use` chunk per traditional use and per benefit, and one `reference` chunk per **VERIFIED** reference. Chunks are embedded with Gemini (`RETRIEVAL_DOCUMENT`, 768 dimensions, normalized) **first**. Then the plant's old `KnowledgeDocument` rows are deleted and the new ones inserted in **one transaction**, so a failure never leaves the plant without chunks. If embedding fails, the chunks are still saved, but without vectors. Plant, reference and `adminCrud` routes `await` the re-index, so it isn't cut off when the serverless response ends. `reindexAll` builds every plant's chunks and embeds them in batches of 90 chunks per request, not one request per plant.
@@ -22,6 +22,13 @@ An educational Q&A assistant that answers only from the Haritima database.
    - No retrieval hits, or the LLM reports `noMatch`: returns the `NO_MATCH` text.
    - No `AI_API_KEY`, or the LLM errors: retrieval-only mode, which quotes the best-matching benefit or use line from the record itself.
 6. The `URGENT_PATTERNS` regex covers English, Hindi (Devanagari) and romanised Hindi emergency wording, e.g. breathing trouble, chest pain, fainting, bleeding, swallowing poison and self-harm. When it matches, the answer is **only** the emergency advice banner (112 or the campus health centre) plus the disclaimer: no retrieval, no LLM call, and no plants. Plain "poisonous plant" questions are deliberately not matched. Every answer carries `DISCLAIMER`.
+
+## Evaluation
+- Test set and scoring: `lib/eval.ts` (`EVAL_CASES`, `runCase`). Runner UI: `app/admin/evaluation/page.tsx` + `components/admin/EvaluationRunner.tsx`. API: `POST /api/knowledge/evaluate` (`requireAdmin`, body `{caseId, mode}`, one case per request, read-only so not audit-logged).
+- 36 fixed questions in groups: English concerns, plant names, Hindi, romanised Hindi, out of scope, emergencies, no false alarm, no doses. Expected plants are **seed slugs**; update `EVAL_CASES` when the catalogue changes (the page warns when an expected slug is missing).
+- Kinds: `plants` passes if at least one expected plant is returned; `noMatch` passes if none are; `urgent` / `notUrgent` check the emergency filter. Every case also fails if the answer text matches `UNSAFE_MODEL_TEXT`.
+- Modes: `full` runs `answerQuestion()` exactly as the chatbot does; `retrieval` checks only the emergency filter and the top-5 `retrievePlantIds()` result (no LLM call).
+- Metrics: pass count, hit rate, top-1, mean precision and recall, wrong no-match rate, average and p95 latency, per-group pass counts, and LLM fallbacks (`ChatAnswer.llmUsed` is false when the retrieval-only fallback was used). Results export as CSV.
 
 ## Persistence and limits
 - History (`ChatConversation`/`ChatMessage`, with the full answer in `payload`) is stored **only for signed-in users**, in conversations they own.

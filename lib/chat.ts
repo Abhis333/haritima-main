@@ -71,7 +71,8 @@ const UNSAFE_MODEL_TEXT = new RegExp(
   "i",
 );
 
-const isUnsafeModelText = (s: string) => UNSAFE_MODEL_TEXT.test(s);
+export const isUnsafeModelText = (s: string) => UNSAFE_MODEL_TEXT.test(s);
+export const isUrgent = (q: string) => URGENT_PATTERNS.test(q);
 
 /** Lower-cased words (3+ chars) for overlap checks between model text and record text. */
 function words(s: string) {
@@ -122,6 +123,8 @@ export type ChatAnswer = {
   context: string;
   plants: ChatPlant[];
   disclaimer: string;
+  /** True when the model's selection was used; false in retrieval-only mode or after an LLM failure. */
+  llmUsed: boolean;
 };
 
 const RETRIEVAL_CONTEXT = {
@@ -169,12 +172,12 @@ Strict rules:
 
 export async function answerQuestion(question: string, lang: "en" | "hi"): Promise<ChatAnswer> {
   // Possible emergency: return only the urgent message and the disclaimer, never plant suggestions.
-  if (URGENT_PATTERNS.test(question)) {
-    return { grounded: false, urgent: URGENT[lang], context: "", plants: [], disclaimer: DISCLAIMER[lang] };
+  if (isUrgent(question)) {
+    return { grounded: false, urgent: URGENT[lang], context: "", plants: [], disclaimer: DISCLAIMER[lang], llmUsed: false };
   }
   const ids = await retrievePlantIds(question, 5);
 
-  const empty: ChatAnswer = { grounded: false, urgent: null, context: NO_MATCH[lang], plants: [], disclaimer: DISCLAIMER[lang] };
+  const empty: ChatAnswer = { grounded: false, urgent: null, context: NO_MATCH[lang], plants: [], disclaimer: DISCLAIMER[lang], llmUsed: false };
   if (ids.length === 0) return empty;
 
   const plants = await prisma.plant.findMany({
@@ -189,6 +192,7 @@ export async function answerQuestion(question: string, lang: "en" | "hi"): Promi
 
   let selection: { id: string; association: string }[] = [];
   let context = "";
+  let llmUsed = false;
 
   if (aiEnabled()) {
     const records = ids
@@ -209,7 +213,7 @@ export async function answerQuestion(question: string, lang: "en" | "hi"): Promi
         SYSTEM,
         JSON.stringify({ language: lang === "hi" ? "Hindi" : "English", question, records }),
       );
-      if (out.noMatch || !Array.isArray(out.plants) || out.plants.length === 0) return empty;
+      if (out.noMatch || !Array.isArray(out.plants) || out.plants.length === 0) return { ...empty, llmUsed: true };
       // Guard: drop any id the model invented.
       selection = out.plants
         .filter((p) => p && typeof p.id === "string" && byId.has(p.id))
@@ -218,6 +222,7 @@ export async function answerQuestion(question: string, lang: "en" | "hi"): Promi
       context = String(out.context ?? "").slice(0, 600);
       // Model framing that mentions doses, diagnosis/cures or texts/citations is replaced by fixed text.
       if (isUnsafeModelText(context)) context = RETRIEVAL_CONTEXT[lang];
+      llmUsed = selection.length > 0;
     } catch (e) {
       console.error("LLM failed, using retrieval-only answer", e);
     }
@@ -241,6 +246,7 @@ export async function answerQuestion(question: string, lang: "en" | "hi"): Promi
     urgent: null,
     context,
     disclaimer: DISCLAIMER[lang],
+    llmUsed,
     plants: selection.map(({ id, association }) => {
       const p = byId.get(id)!;
       const loc = p.locations[0];

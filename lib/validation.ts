@@ -109,6 +109,11 @@ export const chatSchema = z.object({
   lang: z.enum(["en", "hi"]).default("en"),
 });
 
+export const evalSchema = z.object({
+  caseId: text(20).min(1),
+  mode: z.enum(["full", "retrieval"]).default("full"),
+});
+
 export const feedbackSchema = z.object({
   name: text(100).min(2),
   email: z.string().trim().email().max(200),

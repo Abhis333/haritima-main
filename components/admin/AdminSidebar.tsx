@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BookOpen, Brain, FolderTree, Gauge, History, Leaf, MapPin, Menu, MessageSquare, ScrollText, Settings, Users, X } from "lucide-react";
+import { BookOpen, Brain, ClipboardCheck, FolderTree, Gauge, History, Leaf, MapPin, Menu, MessageSquare, ScrollText, Settings, Users, X } from "lucide-react";
 import { Logo } from "../Logo";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +15,7 @@ const items = [
   { href: "/admin/mantras", label: "Mantras", icon: ScrollText },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/knowledge", label: "Chatbot knowledge base", icon: Brain },
+  { href: "/admin/evaluation", label: "Chatbot evaluation", icon: ClipboardCheck },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/admin/audit", label: "Audit log", icon: History },

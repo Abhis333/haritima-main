@@ -21,7 +21,7 @@ npm run db:studio
 npm run create-admin        # reads ADMIN_EMAIL / ADMIN_PASSWORD (>=10 chars) / ADMIN_NAME from .env
 ```
 
-There is no test suite. Verify changes with `npm run typecheck` and `npm run lint`.
+There is no unit test suite. Verify changes with `npm run typecheck` and `npm run lint`. Chatbot behaviour is checked with Admin → Chatbot evaluation (`lib/eval.ts`); update its expected plants when seed data changes.
 
 Setup requires a `.env` copied from `.env.example`. Only `DATABASE_URL` and `AUTH_SECRET` are mandatory; AI, Pl@ntNet and Cloudinary features degrade or are disabled without their keys. After seeding or adding `AI_API_KEY`, embeddings are built via Admin → Knowledge → Reindex (`/api/knowledge/reindex`).
 

@@ -12,6 +12,7 @@ Content management for plants and all related data, plus operations views. It li
   | `app/admin/plants/` | List, `new`, and `[id]` edit pages using `components/admin/PlantForm.tsx` |
   | `app/admin/locations`, `references`, `mantras`, `categories` | Generic editors built on `components/admin/ResourceManager.tsx` |
   | `app/admin/knowledge` | RAG chunk and embedding counts, benefits editor, reindex button |
+  | `app/admin/evaluation` | Runs the fixed chatbot test set and shows pass rate, precision/recall and latency, with CSV export (see [chatbot-rag.md](chatbot-rag.md)) |
   | `app/admin/users` | Role management (see [auth-users.md](auth-users.md)) |
   | `app/admin/feedback` | Contact messages: mark resolved, delete |
   | `app/admin/audit` | Audit log viewer |
