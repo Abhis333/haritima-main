@@ -12,6 +12,7 @@ Haritima — campus plant catalogue, Ayurveda reference, campus map and RAG chat
 npm install                 # also runs prisma generate (postinstall)
 npm run dev                 # http://localhost:3000
 npm run build               # prisma generate && next build
+npm run start               # prisma migrate deploy && next start (production; Railway runs this, so migrations apply on every deploy)
 npm run lint                # next lint
 npm run typecheck           # tsc --noEmit
 npm run db:migrate          # prisma migrate dev  (no migrations committed yet; first run: npx prisma migrate dev --name init)
