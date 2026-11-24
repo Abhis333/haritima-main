@@ -10,12 +10,12 @@ Browse, filter and search the campus plant collection; each plant has a detail p
 
 ## Data
 - `Plant`: names (common, scientific, Hindi, Sanskrit, `otherNames[]`), `family`, `plantType` enum, `availability` enum, `description`/`descriptionHi`, `ayurvedicProperties`, `traditionalUses[]`/`traditionalUsesHi[]`, `plantParts[]`, preparation, cultivation, precautions, image, `featured`.
-- `PlantCategory`: `slug`, `nameEn`/`nameHi`, optional lucide `icon` and hex `color` (the color is also used for map markers). Many-to-many with `Plant`.
+- `PlantCategory`: `slug`, `nameEn`/`nameHi`, optional lucide `icon` and hex `color` (the color is also used for map markers; a blank color is saved as null and the map falls back to `#4e7a3a`). Many-to-many with `Plant`.
 - The "medicinal" stat counts plants in categories with slug `medicinal` or `ayurvedic`.
 
 ## How search works
 - Filters: `q`, `category` (slug), `type`, `availability`, `area` (a location's `campusArea`), `use` (a benefit's `concern`), `page`, `pageSize` (max 60).
-- `q` goes through `tokenize()`: lowercases, drops stopwords, lightly stems English words, and expands them through the `SYNONYMS` map (for example sleep → nidra / नींद). It then becomes an OR prefix tsquery.
+- `q` goes through `tokenize()`: lowercases, drops stopwords (English, Hindi function words such as के/से/में/लिए, and common romanised Hindi such as ke/liye/paudhe), lightly stems English words, and expands them through the `SYNONYMS` map (for example sleep → nidra / नींद). It then becomes an OR prefix tsquery.
 - `searchPlantIds` runs raw SQL: PostgreSQL `simple` full-text search over the concatenated plant fields, plus ILIKE on the names, capped at 200 results.
 - When `q` is set, results are sorted by rank in memory and paginated after that. Otherwise pagination happens in the database, ordered by `featured desc, commonName asc`.
 - The GET list response is cached at the CDN (`s-maxage=60, stale-while-revalidate=300`).
@@ -24,3 +24,8 @@ Browse, filter and search the campus plant collection; each plant has a detail p
 - The slug comes from `slugify(commonName)`. If that slug is taken, a base-36 timestamp is appended.
 - Creating or updating a plant calls `indexPlant()` in the background (not awaited) and writes an audit entry.
 - The detail page shows VERIFIED references first, then PENDING ones with a "pending" badge. REJECTED references are never shown.
+
+## Seed data
+- `prisma/seed.ts` (`npm run db:seed`): categories, the 10 core plants and mantras. Re-running it **resets** benefits, references and locations of those 10 plants.
+- `prisma/seed-extra.ts` (`npm run db:seed-extra`): 16 more plants (Peepal, Banyan, Bael, Haritaki, Bibhitaki, Vasaka, Turmeric, Ginger, Mint, Ashoka, Hibiscus, Moringa, Kalmegh, Punarnava, Shankhpushpi, Marigold). Add-only: existing slugs are skipped. All references PENDING, all locations approximate.
+- After either script, run Admin → Knowledge → Reindex so the chatbot gets embeddings. `lib/eval.ts` expected plants include both sets.

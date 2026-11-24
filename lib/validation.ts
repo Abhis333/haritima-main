@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const MAX_LOCATION_PHOTOS = 6;
+
 const text = (max: number) => z.string().trim().max(max);
 const optText = (max: number) =>
   z.string().trim().max(max).optional().nullable().transform((v) => (v ? v : null));
@@ -9,6 +11,16 @@ const list = z
   .transform((v) =>
     (Array.isArray(v) ? v : (v ?? "").split(/\n|;/)).map((s) => s.trim()).filter(Boolean).slice(0, 50),
   );
+// Month numbers 1-12, de-duplicated and sorted. Left undefined when absent so an update keeps the stored months.
+const months = z
+  .array(z.coerce.number().int().min(1).max(12))
+  .max(12)
+  .optional()
+  .transform((v) => (v ? [...new Set(v)].sort((a, b) => a - b) : undefined));
+const hexColor = z
+  .union([z.literal("").transform(() => null), z.string().trim().regex(/^#[0-9a-fA-F]{6}$/, "Use a hex colour like #4e7a3a")])
+  .optional()
+  .nullable();
 const httpsUrl = z
   .string()
   .trim()
@@ -39,6 +51,8 @@ export const plantSchema = z.object({
   imageUrl: httpsUrl,
   imageAlt: optText(300),
   featured: z.boolean().optional().default(false),
+  floweringMonths: months,
+  fruitingMonths: months,
   categoryIds: z.array(z.string().cuid()).max(10).optional().default([]),
 });
 
@@ -50,6 +64,11 @@ export const locationSchema = z.object({
   campusArea: text(120).min(2),
   locationDescription: optText(500),
   landmark: optText(200),
+  // Left undefined when absent so an update keeps the stored photos.
+  photos: z
+    .array(z.string().trim().url().refine((u) => u.startsWith("https://"), "Must be an https URL"))
+    .max(MAX_LOCATION_PHOTOS, `At most ${MAX_LOCATION_PHOTOS} photos`)
+    .optional(),
 });
 
 export const referenceSchema = z.object({
@@ -100,8 +119,30 @@ export const categorySchema = z.object({
   nameEn: text(60).min(2),
   nameHi: text(60).min(1),
   icon: optText(40),
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
+  // Blank means "use the default map colour" (the form always sends a string).
+  color: hexColor,
 });
+
+export const trailSchema = z.object({
+  slug: text(80).regex(/^[a-z0-9-]+$/, "Use lowercase letters, numbers and dashes"),
+  title: text(120).min(2),
+  titleHi: optText(120),
+  description: text(2000).min(10),
+  descriptionHi: optText(2000),
+  // Blank means "use the theme green" for the route line.
+  color: hexColor,
+  published: z.boolean().default(true),
+});
+
+export const trailStopSchema = z.object({
+  trailId: z.string().cuid(),
+  locationId: z.string().cuid(),
+  position: z.coerce.number().int().min(1).max(500),
+  note: optText(500),
+  noteHi: optText(500),
+});
+
+export const viewSchema = z.object({ plantId: z.string().cuid() });
 
 export const chatSchema = z.object({
   message: text(800).min(2),

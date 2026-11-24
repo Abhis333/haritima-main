@@ -1,12 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BookOpen, MapPin } from "lucide-react";
+import { ArrowLeft, BookOpen, MapPin, Navigation } from "lucide-react";
+import { googleDirectionsUrl } from "@/lib/geo";
 import { prisma } from "@/lib/prisma";
 import { getDictionary, pick } from "@/lib/i18n/server";
 import { PlantImage } from "@/components/PlantImage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ViewBeacon } from "@/components/ViewBeacon";
+import { SeasonStrip } from "@/components/SeasonStrip";
 import { AVAILABILITY_LABEL, PLANT_TYPE_LABEL, SOURCE_TYPE_LABEL } from "@/lib/utils";
 
 type Params = Promise<{ slug: string }>;
@@ -61,11 +64,12 @@ export default async function PlantDetailPage({ params }: { params: Params }) {
 
   return (
     <article className="container-h py-10">
+      <ViewBeacon plantId={plant.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <Link href="/plants" className="inline-flex items-center gap-1 text-sm text-leaf hover:underline"><ArrowLeft className="h-4 w-4" /> {t.plant.back}</Link>
 
       <header className="mt-6 grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-end">
-        <PlantImage src={plant.imageUrl} alt={plant.imageAlt ?? plant.commonName} name={plant.hindiName ?? plant.commonName} className="aspect-[4/3] w-full rounded-xl" sizes="(max-width: 1024px) 100vw, 55vw" priority />
+        <PlantImage src={plant.imageUrl ?? plant.locations.find((l) => l.photos.length)?.photos[0] ?? null} alt={plant.imageAlt ?? plant.commonName} name={plant.hindiName ?? plant.commonName} className="aspect-[4/3] w-full rounded-xl" sizes="(max-width: 1024px) 100vw, 55vw" priority />
         <div>
           <div className="flex flex-wrap gap-2">
             {plant.categories.map((c) => (
@@ -149,13 +153,42 @@ export default async function PlantDetailPage({ params }: { params: Params }) {
                     {l.locationDescription && <p className="text-[0.95rem]">{l.locationDescription}</p>}
                     {l.landmark && <p className="text-sm text-muted-foreground">{l.landmark}</p>}
                     <Badge variant={l.isApproximate ? "pending" : "verified"} className="mt-1.5">{l.isApproximate ? t.plant.approximate : t.plant.exact}</Badge>
+                    {l.photos.length > 0 && (
+                      <ul className="mt-3 grid grid-cols-3 gap-1.5" aria-label={t.plant.spotPhotos}>
+                        {l.photos.map((src, i) => (
+                          <li key={src}>
+                            <a href={src} target="_blank" rel="noopener noreferrer">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={src} alt={`${plant.commonName}, ${l.campusArea} (${i + 1})`} loading="lazy" className="aspect-square w-full rounded-md object-cover" />
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
             )}
             {plant.locations.length > 0 && (
-              <Button asChild className="mt-5 w-full"><Link href={`/map?plant=${plant.slug}`}><MapPin /> {t.plant.viewOnMap}</Link></Button>
+              <>
+                <Button asChild className="mt-5 w-full"><Link href={`/map?plant=${plant.slug}`}><MapPin /> {t.plant.viewOnMap}</Link></Button>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <Button asChild variant="outline"><Link href={`/map?plant=${plant.slug}&guide=1`}><Navigation /> {t.map.guide}</Link></Button>
+                  <Button asChild variant="outline">
+                    <a href={googleDirectionsUrl(plant.locations[0].latitude, plant.locations[0].longitude)} target="_blank" rel="noopener noreferrer">{t.map.directions} ↗</a>
+                  </Button>
+                </div>
+              </>
             )}
+          </div>
+          <div className="rounded-xl border border-parch bg-card p-5">
+            <h2 className="text-2xl">{t.seasons.onCampus}</h2>
+            {plant.floweringMonths.length || plant.fruitingMonths.length ? (
+              <SeasonStrip flowering={plant.floweringMonths} fruiting={plant.fruitingMonths} labels={t.seasons} className="mt-4" />
+            ) : (
+              <p className="mt-3 text-muted-foreground">{t.seasons.notRecorded}</p>
+            )}
+            <Link href="/seasons" className="mt-3 inline-block text-sm font-medium text-leaf hover:underline">{t.seasons.title} →</Link>
           </div>
           <Button asChild variant="gold" className="w-full"><Link href="/chatbot">{t.hero.ask}</Link></Button>
         </aside>

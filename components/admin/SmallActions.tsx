@@ -74,7 +74,13 @@ export function ReindexButton() {
           const res = await fetch("/api/knowledge/reindex", { method: "POST" });
           const data = await res.json().catch(() => ({}));
           setBusy(false);
-          setMsg(res.ok ? `Rebuilt ${data.chunks} chunks from ${data.plants} plants.` : data.error ?? "Rebuild failed.");
+          setMsg(
+            !res.ok
+              ? data.error ?? "Rebuild failed."
+              : data.embeddingsFailed
+                ? `Rebuilt ${data.chunks} chunks from ${data.plants} plants, but embeddings failed (often a rate limit). Existing vectors were kept for unchanged chunks; try again later.`
+                : `Rebuilt ${data.chunks} chunks from ${data.plants} plants.`,
+          );
           router.refresh();
         }}
       >

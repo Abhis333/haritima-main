@@ -10,11 +10,14 @@ import { Select } from "../ui/select";
 import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
 import { FileUploadField } from "./FileUploadField";
+import { PhotosUploadField } from "./PhotosUploadField";
 
 export type Field = {
   name: string;
   label: string;
-  type: "text" | "textarea" | "number" | "select" | "checkbox" | "url" | "audio" | "color";
+  type: "text" | "textarea" | "number" | "select" | "checkbox" | "url" | "audio" | "color" | "photos";
+  /** For "photos": maximum number of images. */
+  max?: number;
   options?: { value: string; label: string }[];
   required?: boolean;
   help?: string;
@@ -57,6 +60,7 @@ export function ResourceManager({ title, endpoint, fields, columns, rows, defaul
     const body: Record<string, unknown> = {};
     for (const f of fields) {
       if (f.type === "checkbox") body[f.name] = fd.get(f.name) === "on";
+      else if (f.type === "photos") body[f.name] = fd.getAll(f.name);
       else if (f.type === "number") body[f.name] = fd.get(f.name) === "" ? null : Number(fd.get(f.name));
       else body[f.name] = (fd.get(f.name) as string | null) ?? "";
     }
@@ -116,6 +120,8 @@ export function ResourceManager({ title, endpoint, fields, columns, rows, defaul
                           {!f.required && <option value="">—</option>}
                           {f.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                         </Select>
+                      ) : f.type === "photos" ? (
+                        <PhotosUploadField id={id} name={f.name} max={f.max ?? 6} defaultValue={Array.isArray(value) ? (value as string[]) : []} />
                       ) : f.type === "audio" ? (
                         <FileUploadField id={id} name={f.name} kind="audio" defaultValue={(value as string) ?? ""} />
                       ) : (

@@ -43,13 +43,27 @@ function buildDocs(plant: IndexablePlant): Doc[] {
   ];
 }
 
-async function embedDocs(texts: string[]) {
+/** Returns the vectors, `[]` when AI is disabled, or `null` when the embedding call failed. */
+async function embedDocs(texts: string[]): Promise<number[][] | null> {
   try {
     return await embed(texts, "RETRIEVAL_DOCUMENT");
   } catch (e) {
-    console.error("Embedding failed, falling back to full-text only", e);
-    return [];
+    console.error("Embedding failed; keeping existing vectors for unchanged chunks", e);
+    return null;
   }
+}
+
+/**
+ * When embedding failed, reuse the stored vector of any chunk whose text is unchanged, so a transient error
+ * (rate limit, timeout) does not wipe a working semantic index. Only new or edited chunks end up without a vector.
+ */
+async function carryForward(plantIds: string[], docs: { plantId: string; content: string }[]) {
+  const existing = await prisma.knowledgeDocument.findMany({
+    where: { plantId: { in: plantIds }, NOT: { embedding: { isEmpty: true } } },
+    select: { plantId: true, content: true, embedding: true },
+  });
+  const byKey = new Map<string, number[]>(existing.map((d) => [`${d.plantId}|${d.content}`, d.embedding]));
+  return docs.map((d) => byKey.get(`${d.plantId}|${d.content}`) ?? []);
 }
 
 /** Replaces a plant's chunks atomically, so a failure never leaves the plant with no chunks. */
@@ -70,7 +84,9 @@ export async function indexPlant(plantId: string) {
     return 0;
   }
   const docs = buildDocs(plant);
-  const vectors = await embedDocs(docs.map((d) => d.content));
+  const vectors =
+    (await embedDocs(docs.map((d) => d.content))) ??
+    (await carryForward([plantId], docs.map((d) => ({ plantId, content: d.content }))));
   await writeDocs(plantId, docs, vectors);
   return docs.length;
 }
@@ -79,13 +95,19 @@ export async function indexPlant(plantId: string) {
 export async function reindexAll() {
   const plants = await prisma.plant.findMany({ include: INDEX_INCLUDE });
   const perPlant = plants.map((p) => ({ id: p.id, docs: buildDocs(p) }));
-  const vectors = await embedDocs(perPlant.flatMap((p) => p.docs.map((d) => d.content)));
+  const embedded = await embedDocs(perPlant.flatMap((p) => p.docs.map((d) => d.content)));
+  const vectors =
+    embedded ??
+    (await carryForward(
+      perPlant.map((p) => p.id),
+      perPlant.flatMap((p) => p.docs.map((d) => ({ plantId: p.id, content: d.content }))),
+    ));
   let offset = 0;
   for (const p of perPlant) {
     await writeDocs(p.id, p.docs, vectors.slice(offset, offset + p.docs.length));
     offset += p.docs.length;
   }
-  return { plants: plants.length, chunks: offset };
+  return { plants: plants.length, chunks: offset, embeddingsFailed: embedded === null };
 }
 
 /**

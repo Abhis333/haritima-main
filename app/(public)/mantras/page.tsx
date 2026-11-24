@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getDictionary } from "@/lib/i18n/server";
 import { MantraCard } from "@/components/MantraAnimation";
 import { cn } from "@/lib/utils";
+import { PUBLIC_MANTRA_WHERE } from "@/lib/public-select";
 
 export const metadata: Metadata = { title: "Vedic mantras & wisdom", description: "Vedic mantras on nature, peace and knowledge with Hindi and English translations." };
 
@@ -14,7 +15,7 @@ export default async function MantrasPage({ searchParams }: { searchParams: Prom
   const { category } = await searchParams;
   const active = category && CATEGORIES.includes(category) ? category : undefined;
   const mantras = await prisma.mantra.findMany({
-    where: { verificationStatus: { not: "REJECTED" }, ...(active ? { category: active } : {}) },
+    where: { ...PUBLIC_MANTRA_WHERE, ...(active ? { category: active } : {}) },
     orderBy: [{ featured: "desc" }, { createdAt: "asc" }],
   });
   const labels = { source: t.mantras.source, hindi: t.mantras.hindi, english: t.mantras.english, meaning: t.mantras.meaning, listen: t.mantras.listen, pending: t.plant.pending };

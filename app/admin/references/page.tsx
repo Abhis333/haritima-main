@@ -42,7 +42,7 @@ export default async function AdminReferences() {
           { name: "verse", label: "Verse", type: "text" },
           { name: "citation", label: "Citation", type: "textarea", required: true, help: "Full citation: edition, publisher, year, page." },
           { name: "referenceUrl", label: "URL (https)", type: "url" },
-          { name: "verificationStatus", label: "Verification status", type: "select", required: true, options: ["PENDING", "VERIFIED", "REJECTED"].map((v) => ({ value: v, label: v })) },
+          { name: "verificationStatus", label: "Verification status", type: "select", required: true, options: ["PENDING", "VERIFIED", "REJECTED"].map((v) => ({ value: v, label: v })), help: "Editing the plant, text, author, chapter, section, verse, citation, URL or source type of a VERIFIED reference returns it to PENDING for re-checking. To record a re-check, save once (it becomes PENDING), then set VERIFIED." },
           { name: "notes", label: "Reviewer notes", type: "textarea" },
         ]}
       />

@@ -17,3 +17,6 @@ export const PUBLIC_REFERENCE_SELECT = {
   sourceType: true,
   verificationStatus: true,
 } satisfies Prisma.AyurvedicReferenceSelect;
+
+/** Mantras shown on any public page or API. REJECTED sources are never shown publicly. */
+export const PUBLIC_MANTRA_WHERE = { verificationStatus: { not: "REJECTED" } } satisfies Prisma.MantraWhereInput;

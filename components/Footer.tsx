@@ -7,6 +7,8 @@ export async function Footer() {
   const links = [
     { href: "/plants", label: t.nav.plants },
     { href: "/map", label: t.nav.map },
+    { href: "/trails", label: t.nav.trails },
+    { href: "/seasons", label: t.nav.seasons },
     { href: "/identify", label: t.nav.identify },
     { href: "/ayurveda", label: t.nav.ayurveda },
     { href: "/mantras", label: t.nav.mantras },

@@ -10,6 +10,9 @@ import { Badge } from "./ui/badge";
 import { cn, SOURCE_TYPE_LABEL } from "@/lib/utils";
 import type { ChatAnswer } from "@/lib/chat";
 
+// crypto.randomUUID is missing outside secure contexts (e.g. http://<LAN-IP>), so ids are built by hand.
+const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+
 type Msg = { id: string; role: "user"; text: string } | { id: string; role: "assistant"; answer: ChatAnswer } | { id: string; role: "error"; text: string };
 
 export function Chatbot({ compact = false }: { compact?: boolean }) {
@@ -20,13 +23,16 @@ export function Chatbot({ compact = false }: { compact?: boolean }) {
   const [conversationId, setConversationId] = useState<string | undefined>();
   const endRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), [messages, busy]);
+  // Braces matter: newer browsers return a Promise from scrollIntoView, and an effect may only return a cleanup function.
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, busy]);
 
   async function ask(text: string) {
     const q = text.trim();
     if (q.length < 2 || busy) return;
     setInput("");
-    setMessages((m) => [...m, { id: crypto.randomUUID(), role: "user", text: q }]);
+    setMessages((m) => [...m, { id: uid(), role: "user", text: q }]);
     setBusy(true);
     try {
       const res = await fetch("/api/chat", {
@@ -38,9 +44,9 @@ export function Chatbot({ compact = false }: { compact?: boolean }) {
       if (!res.ok) throw new Error(t.chat.error);
       const data = (await res.json()) as { answer: ChatAnswer; conversationId?: string };
       if (data.conversationId) setConversationId(data.conversationId);
-      setMessages((m) => [...m, { id: crypto.randomUUID(), role: "assistant", answer: data.answer }]);
+      setMessages((m) => [...m, { id: uid(), role: "assistant", answer: data.answer }]);
     } catch (e) {
-      setMessages((m) => [...m, { id: crypto.randomUUID(), role: "error", text: e instanceof Error ? e.message : t.chat.error }]);
+      setMessages((m) => [...m, { id: uid(), role: "error", text: e instanceof Error ? e.message : t.chat.error }]);
     } finally {
       setBusy(false);
     }

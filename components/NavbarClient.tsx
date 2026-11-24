@@ -23,6 +23,7 @@ export function NavbarClient({ user, logout }: Props) {
     { href: "/", label: t.nav.home },
     { href: "/plants", label: t.nav.plants },
     { href: "/map", label: t.nav.map },
+    { href: "/trails", label: t.nav.trails },
     { href: "/ayurveda", label: t.nav.ayurveda },
     { href: "/mantras", label: t.nav.mantras },
     { href: "/chatbot", label: t.nav.ask },

@@ -1,12 +1,13 @@
 import { Badge } from "@/components/ui/badge";
+import { aiEnabled, chatEnabled, chatModelLabel } from "@/lib/ai";
 
 // Shows whether each integration is configured — never the secret values themselves.
 export default function AdminSettings() {
   const checks = [
     { name: "Database", ok: Boolean(process.env.DATABASE_URL), note: "DATABASE_URL" },
     { name: "Auth secret", ok: Boolean(process.env.AUTH_SECRET), note: "AUTH_SECRET" },
-    { name: "AI chatbot (Gemini)", ok: Boolean(process.env.AI_API_KEY), note: `AI_API_KEY · model ${process.env.AI_CHAT_MODEL || "gemini-3.1-flash-lite"}` },
-    { name: "Embeddings", ok: Boolean(process.env.AI_API_KEY), note: process.env.AI_EMBEDDING_MODEL || "gemini-embedding-001" },
+    { name: "AI chatbot answers", ok: chatEnabled(), note: chatModelLabel() },
+    { name: "Embeddings (Gemini)", ok: aiEnabled(), note: `AI_API_KEY · ${process.env.AI_EMBEDDING_MODEL || "gemini-embedding-001"}` },
     { name: "Plant identification (Pl@ntNet)", ok: Boolean(process.env.PLANTNET_API_KEY), note: "PLANTNET_API_KEY" },
     { name: "Image & audio storage (Cloudinary)", ok: Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET), note: "CLOUDINARY_*" },
     { name: "Map tiles", ok: true, note: process.env.NEXT_PUBLIC_MAP_URL || "OpenStreetMap default" },

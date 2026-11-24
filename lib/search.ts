@@ -2,9 +2,15 @@ import { Prisma, type Availability, type PlantType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const STOPWORDS = new Set(
-  "a an the i me my is am are was be have has had do does which what who where when how for of to in on at and or with from about can could should tell show plants plant campus near any some traditionally used use this that it its please".split(
-    " ",
-  ),
+  [
+    "a an the i me my is am are was be have has had do does which what who where when how for of to in on at and or with from about can could should tell show plants plant campus near any some traditionally used use this that it its please",
+    // Hindi function words. Without these, particles like के/से/में become prefix terms that match almost every Hindi line.
+    "के का की को से में पर और या है हैं था थे थी लिए लिये कौन कौनसे क्या कैसे कहाँ कहां कोई कुछ वाले वाली वाला पौधे पौधा पौधों बताइए बताएं बताओ बताइये मुझे मेरे मेरी हम यह ये वह वो एक भी तो ही किस किन जो इस उस इसके उसके कर करने करें करता होता होते होती सकते सकता सकती परिसर उपयोग",
+    // Common romanised Hindi function words ("neend ke liye paudhe").
+    "ke ka ki ko se mein hai hain liye kaun konse kaunse kya kaise koi kuch wale wali paudhe paudha podhe batao bataiye",
+  ]
+    .join(" ")
+    .split(" "),
 );
 
 /** Very light English stemming so "sleeping" also matches "sleep". Devanagari tokens pass through. */

@@ -12,6 +12,9 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "db:seed-extra": "tsx --env-file=.env prisma/seed-extra.ts",
+    "db:seed-trails": "tsx --env-file=.env prisma/seed-seasons-trails.ts",
+    "db:suggest-refs": "tsx --env-file=.env prisma/apply-reference-suggestions.ts",
     "db:studio": "prisma studio",
     "create-admin": "tsx --env-file=.env scripts/create-admin.ts",
     "postinstall": "prisma generate"

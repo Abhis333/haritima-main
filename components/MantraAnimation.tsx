@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /** Split into grapheme clusters so Devanagari matras and conjuncts never detach from their consonant. */
@@ -13,8 +13,20 @@ function graphemes(text: string) {
   return Array.from(text);
 }
 
-export function MantraText({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) {
+/**
+ * `useReducedMotion()` is null during SSR but reads matchMedia on the first client render, so branching on it
+ * directly causes a hydration mismatch for exactly the users who asked for less motion. This returns false until
+ * after mount (matching the server markup), then the real preference.
+ */
+function useReducedMotionAfterMount() {
   const reduce = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted && Boolean(reduce);
+}
+
+export function MantraText({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) {
+  const reduce = useReducedMotionAfterMount();
   const lines = useMemo(() => text.split("\n").map((l) => graphemes(l)), [text]);
   const total = lines.reduce((n, l) => n + l.length, 0);
   const step = Math.min(0.045, 2.4 / Math.max(total, 1)); // long mantras still finish in ~2.5s
@@ -71,7 +83,7 @@ export function MantraCard({
   labels: { source: string; hindi: string; english: string; meaning: string; listen: string; pending: string };
   large?: boolean;
 }) {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionAfterMount();
   const after = reduce ? 0 : Math.min(2.6, mantra.sanskritText.length * 0.03) + 0.2;
   return (
     <article className={cn("relative overflow-hidden rounded-xl border border-parch bg-card", large ? "p-8 sm:p-12" : "p-6 sm:p-8")}>
@@ -85,7 +97,7 @@ export function MantraCard({
           initial={reduce ? false : { opacity: 0, y: 6 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: after, duration: 0.6 }}
+          transition={reduce ? { duration: 0 } : { delay: after, duration: 0.6 }}
           className="mt-6 grid gap-5 border-t border-parch pt-5 md:grid-cols-2"
         >
           <div>
@@ -116,7 +128,7 @@ export function MantraCard({
 }
 
 function FloatingLeaves() {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionAfterMount();
   const leaves = [
     { x: "86%", y: "10%", r: 20, s: 1 },
     { x: "92%", y: "46%", r: -30, s: 0.7 },

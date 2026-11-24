@@ -83,9 +83,12 @@
   .sanskrit { font-family: var(--font-sanskrit); }
   .sci { font-style: italic; }
   /* Leaflet popups in the house style */
-  .leaflet-popup-content-wrapper { border-radius: 14px !important; background: #faf5ea !important; }
-  .leaflet-popup-content { margin: 12px 14px !important; font-family: var(--font-sans); }
-  .leaflet-container { font-family: var(--font-sans); background: #e7dcc2; }
+  .leaflet-popup-content-wrapper { border-radius: 8px !important; background: #ffffff !important; padding: 0 !important; overflow: hidden; box-shadow: 0 6px 24px rgb(15 42 30 / 0.18) !important; }
+  .leaflet-popup-content { margin: 0 !important; font-family: var(--font-sans); line-height: 1.4; }
+  .leaflet-popup-tip { background: #ffffff !important; }
+  .leaflet-container a.leaflet-popup-close-button { color: #ffffff; text-shadow: 0 1px 3px rgb(0 0 0 / 0.6); top: 4px; right: 4px; }
+  .leaflet-container { font-family: var(--font-sans); background: #eef0ea; }
+  .leaflet-bar a { color: var(--color-forest) !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

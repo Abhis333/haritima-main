@@ -23,7 +23,7 @@ Content management for plants and all related data, plus operations views. It li
 
 ## Pattern
 - Admin pages are **server components** that read with Prisma directly and pass rows to client components.
-- All writes go through `app/api/*` handlers. Simple resources use `adminCrud()` from `lib/crud.ts`, which runs `requireAdmin`, validates with zod, writes `audit()`, and optionally re-indexes the linked `plantId`.
+- All writes go through `app/api/*` handlers. Simple resources use `adminCrud()` from `lib/crud.ts`, which runs `requireAdmin`, validates with zod, writes `audit()`, and optionally re-indexes the linked `plantId` (on PUT, both the previous and the new `plantId` when a record is moved).
 - To add a new admin-managed resource:
   1. Add a zod schema in `lib/validation.ts`.
   2. Add a list route exporting `GET` + `adminCrud(...).POST`, and an `[id]` route exporting `PUT`/`DELETE`.

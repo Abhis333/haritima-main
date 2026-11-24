@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-हरिtima — campus plant catalogue, Ayurveda reference, campus map and RAG chatbot for Dev Sanskriti Vishwavidyalaya (DSVV), Haridwar. Academic MCA project. Next.js 15 App Router + React 19 + TypeScript, Prisma 6 on PostgreSQL (Neon/Supabase), Auth.js v5, Tailwind v4, deployed on Vercel.
+Haritima — campus plant catalogue, Ayurveda reference, campus map and RAG chatbot for Dev Sanskriti Vishwavidyalaya (DSVV), Haridwar. Academic MCA project. Next.js 15 App Router + React 19 + TypeScript, Prisma 6 on PostgreSQL (Neon/Supabase), Auth.js v5, Tailwind v4, deployed on Vercel.
 
 ## Commands
 
@@ -16,7 +16,10 @@ npm run lint                # next lint
 npm run typecheck           # tsc --noEmit
 npm run db:migrate          # prisma migrate dev  (no migrations committed yet; first run: npx prisma migrate dev --name init)
 npm run db:deploy           # prisma migrate deploy (production)
-npm run db:seed             # tsx prisma/seed.ts
+npm run db:seed             # tsx prisma/seed.ts (resets child records of the 10 core plants)
+npm run db:seed-extra       # add-only: 16 more plants
+npm run db:seed-trails      # add-only: seasonal months + 2 walking trails
+npm run db:suggest-refs     # fill suggested source books on untouched placeholder references
 npm run db:studio
 npm run create-admin        # reads ADMIN_EMAIL / ADMIN_PASSWORD (>=10 chars) / ADMIN_NAME from .env
 ```
@@ -35,6 +38,9 @@ Detailed per-feature summaries live in `docs/features/`. Read the relevant file 
 | "Ask Haritima" RAG chatbot | [docs/features/chatbot-rag.md](docs/features/chatbot-rag.md) | `lib/chat.ts`, `lib/rag.ts`, `lib/ai.ts`, `app/api/chat` |
 | Photo plant identification | [docs/features/plant-identification.md](docs/features/plant-identification.md) | `app/api/identify`, `lib/plantnet.ts` |
 | Campus map and locations | [docs/features/campus-map.md](docs/features/campus-map.md) | `components/PlantMap.tsx`, `lib/map-data.ts`, `app/api/locations` |
+| Campus walking trails | [docs/features/walking-trails.md](docs/features/walking-trails.md) | `app/(public)/trails`, `lib/trails.ts`, `components/TrailMap.tsx`, `app/api/trails`, `app/api/trail-stops` |
+| Seasonal calendar | [docs/features/seasonal-calendar.md](docs/features/seasonal-calendar.md) | `app/(public)/seasons`, `components/SeasonStrip.tsx` |
+| Analytics (views, chatbot usage) | [docs/features/analytics.md](docs/features/analytics.md) | `lib/analytics.ts`, `app/api/views`, `app/admin/analytics`, `components/admin/Charts.tsx` |
 | Ayurveda references, benefits, verification | [docs/features/ayurveda-references.md](docs/features/ayurveda-references.md) | `app/api/references`, `app/api/benefits` |
 | Mantras | [docs/features/mantras.md](docs/features/mantras.md) | `app/(public)/mantras`, `components/MantraAnimation.tsx` |
 | Auth, roles, users | [docs/features/auth-users.md](docs/features/auth-users.md) | `lib/auth*.ts`, `middleware.ts`, `app/api/users` |
@@ -78,7 +84,7 @@ Slash commands in `.claude/commands/`:
 - Simple admin resources use the `adminCrud(entity, delegate, schema, reindex)` factory in `lib/crud.ts`, which gives POST/PUT/DELETE with `requireAdmin`, validation, `audit()` logging, and optional RAG re-index of the linked `plantId`. See `app/api/locations/route.ts` + `[id]/route.ts` for the pattern (list route exports GET + POST, `[id]` route exports PUT + DELETE).
 - Plants have a hand-written route (`app/api/plants/[id]/route.ts`) because of category relations; it also calls `audit()` and `indexPlant()`.
 - Every admin write must be audit-logged (`lib/audit.ts`), and any change to plant data, benefits, locations or references must re-index that plant.
-- Public abuse-prone endpoints (chat, identify, feedback, register) use the in-memory `rateLimit()` from `lib/rate-limit.ts` (per-instance only).
+- Public abuse-prone endpoints (chat, identify, feedback, register, views) use the in-memory `rateLimit()` from `lib/rate-limit.ts` (per-instance only).
 
 ### Search and RAG chatbot ("Ask Haritima")
 - `lib/search.ts` — tokenizer with light stemming, stopwords and an English/Hindi/Ayurvedic-term `SYNONYMS` map; builds OR prefix `tsquery`s. `searchPlantIds` does PostgreSQL `simple` full-text + ILIKE over plant fields; `findPlants` powers the catalogue filters.
@@ -96,7 +102,7 @@ Slash commands in `.claude/commands/`:
 - Languages `en` and `hi`, selected by the `haritima-lang` cookie. UI strings live in `lib/i18n/dictionaries.ts`; server components use `getDictionary()` (`lib/i18n/server.ts`), client components use `lib/i18n/client.tsx`. New UI strings must be added to both dictionaries.
 
 ### Server-only modules and external services
-- `lib/ai.ts`, `lib/rag.ts`, `lib/chat.ts`, `lib/plantnet.ts`, `lib/cloudinary.ts` and `lib/i18n/server.ts` import `server-only`; never import them from client components. Cloudinary uploads go through `/api/upload` (signed, with via `/api/upload` with magic-byte and size checks: 5 MB image / 10 MB audio). Only `NEXT_PUBLIC_*` env vars reach the browser.
+- `lib/ai.ts`, `lib/rag.ts`, `lib/chat.ts`, `lib/plantnet.ts`, `lib/cloudinary.ts` and `lib/i18n/server.ts` import `server-only`; never import them from client components. Cloudinary uploads go through `/api/upload` (signed, with magic-byte and size checks: 5 MB image / 10 MB audio). Only `NEXT_PUBLIC_*` env vars reach the browser.
 - Remote images are allowed only from `res.cloudinary.com` and `upload.wikimedia.org` (`next.config.ts`), which also sets security headers.
 - The map (`components/PlantMap.tsx`) uses Leaflet and is loaded client-only via `PlantMapLoader.tsx`.
 

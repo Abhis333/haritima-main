@@ -2,7 +2,7 @@ export type Lang = "en" | "hi";
 export const LANG_COOKIE = "haritima-lang";
 
 const en = {
-  nav: { home: "Home", plants: "Plants", map: "Map", ayurveda: "Ayurveda", mantras: "Mantras", ask: "Ask Haritima", identify: "Identify", about: "About", contact: "Contact", login: "Sign in", logout: "Sign out", admin: "Admin dashboard", menu: "Menu" },
+  nav: { home: "Home", plants: "Plants", map: "Map", ayurveda: "Ayurveda", mantras: "Mantras", trails: "Trails", seasons: "Seasons", ask: "Ask Haritima", identify: "Identify", about: "About", contact: "Contact", login: "Sign in", logout: "Sign out", admin: "Admin dashboard", menu: "Menu" },
   hero: {
     subtitle: "Discover the Green Wisdom of Shantikunj",
     intro: "Haritima connects the living plant heritage of Dev Sanskriti Vishwavidyalaya with traditional Ayurvedic knowledge, campus locations, and verified textual references.",
@@ -25,11 +25,16 @@ const en = {
   plant: {
     scientific: "Scientific name", hindi: "Hindi name", sanskrit: "Sanskrit name", family: "Family", type: "Plant type", otherNames: "Other names",
     about: "About", uses: "Traditional Ayurvedic uses", parts: "Parts traditionally used", properties: "Traditional properties", preparation: "Preparation (as documented)", cultivation: "Cultivation", precautions: "Precautions",
-    location: "On campus", viewOnMap: "View on campus map", approximate: "Approximate location", exact: "Surveyed location", references: "Ayurvedic references",
+    location: "On campus", viewOnMap: "View on campus map", approximate: "Approximate location", exact: "Surveyed location", spotPhotos: "Photos from this spot", references: "Ayurvedic references",
     source: "Source", text: "Text", sectionChapter: "Section / chapter", reference: "Reference", verse: "Verse", verified: "Verified", pending: "Reference pending verification",
     noRefs: "Reference not available in the verified knowledge base.", noLocation: "Location not yet recorded.", back: "All plants",
   },
-  map: { title: "Campus plant map", sub: "Tap a pin to see the plant. Colours show the category.", viewPlant: "View plant", approximate: "Approximate", legend: "Legend", filter: "Show category" },
+  map: { title: "Campus plant map", sub: "Tap a pin to see the plant. Colours show the category.", viewPlant: "View plant", approximate: "Approximate", legend: "Categories", filter: "Show category", location: "Location", approximateNote: "Approximate location, not yet surveyed", plantsLabel: "plants mapped", areasLabel: "campus areas",
+    guide: "Guide me here", stopGuide: "Stop guiding", directions: "Directions", locating: "Finding your location…", head: "Head", away: "away", walk: "min walk", accuracy: "GPS accuracy",
+    arrived: "You have arrived. Look for the plant nearby.", outside: "You are outside the campus map. Use Directions to reach the campus first.",
+    denied: "Location permission was denied. Allow it in your browser settings.", insecure: "Live guiding needs the https site (or localhost).", unavailable: "Could not get your location. Try outdoors.",
+    approxTarget: "This plant's spot is approximate, so look around the area.", straightLine: "The line shows the direction, not a footpath. Follow campus paths that way.", you: "You are here",
+    dirs: ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"] },
   chat: {
     title: "Ask Haritima", sub: "Ask about a plant on campus or a concern you want to read about. Every answer is built from Haritima’s verified records.",
     placeholder: "e.g. Which plants are traditionally used for digestion?", send: "Ask", thinking: "Searching the knowledge base…",
@@ -48,13 +53,15 @@ const en = {
   contact: { title: "Contact & feedback", sub: "Spotted a plant we missed, a wrong location, or a source that needs checking? Tell us.", name: "Name", email: "Email", subject: "Subject", message: "Message", send: "Send feedback", sent: "Feedback sent. Thank you.", error: "Feedback could not be sent. Check the fields and try again." },
   auth: { title: "Sign in to Haritima", email: "Email", password: "Password", submit: "Sign in", invalid: "Email or password is incorrect.", noAccount: "New here?", register: "Create an account", registerTitle: "Create your account", name: "Name", create: "Create account", haveAccount: "Already have an account?" },
   footer: { tagline: "Connecting nature, knowledge and traditional wisdom.", academic: "Developed as an academic project at Dev Sanskriti Vishwavidyalaya, Shantikunj, Haridwar.", privacy: "Privacy", terms: "Terms" },
+  trails: { title: "Campus walking trails", sub: "Guided walks through the plants of the campus. Follow the numbered stops on the map.", stops: "stops", stop: "Stop", walk: "min walk", km: "km", all: "All trails", none: "No trails published yet.", approximate: "Some stops use approximate locations, so treat the route as a guide.", viewPlant: "View plant", route: "Route" },
+  seasons: { title: "Seasonal calendar", sub: "Which campus plants usually flower and fruit in each month.", thisMonth: "This month", flowering: "Flowering", fruiting: "Fruiting", nothing: "Nothing recorded for this month yet.", calendar: "Month by month", onCampus: "Seasons on campus", notRecorded: "Season not recorded yet.", note: "Months are typical for Haridwar and vary with weather.", months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], short: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] },
   common: { loading: "Loading…", disclaimerShort: "Educational information only — not medical advice." },
 };
 
 export type Dictionary = typeof en;
 
 const hi: Dictionary = {
-  nav: { home: "मुखपृष्ठ", plants: "पौधे", map: "मानचित्र", ayurveda: "आयुर्वेद", mantras: "मंत्र", ask: "हरिtima से पूछें", identify: "पहचानें", about: "परिचय", contact: "संपर्क", login: "लॉग इन", logout: "लॉग आउट", admin: "एडमिन डैशबोर्ड", menu: "मेनू" },
+  nav: { home: "मुखपृष्ठ", plants: "पौधे", map: "मानचित्र", ayurveda: "आयुर्वेद", mantras: "मंत्र", trails: "भ्रमण पथ", seasons: "ऋतु कैलेंडर", ask: "हरिtima से पूछें", identify: "पहचानें", about: "परिचय", contact: "संपर्क", login: "लॉग इन", logout: "लॉग आउट", admin: "एडमिन डैशबोर्ड", menu: "मेनू" },
   hero: {
     subtitle: "शांतिकुंज की हरित और आयुर्वेदिक विरासत को जानें",
     intro: "हरिtima देव संस्कृति विश्वविद्यालय की जीवंत वनस्पति विरासत को पारंपरिक आयुर्वेदिक ज्ञान, परिसर के स्थानों और सत्यापित ग्रंथ-संदर्भों से जोड़ता है।",
@@ -77,11 +84,16 @@ const hi: Dictionary = {
   plant: {
     scientific: "वैज्ञानिक नाम", hindi: "हिन्दी नाम", sanskrit: "संस्कृत नाम", family: "कुल", type: "प्रकार", otherNames: "अन्य नाम",
     about: "परिचय", uses: "पारंपरिक आयुर्वेदिक उपयोग", parts: "प्रयुक्त अंग", properties: "पारंपरिक गुण", preparation: "निर्माण विधि (जैसा दर्ज है)", cultivation: "खेती", precautions: "सावधानियाँ",
-    location: "परिसर में", viewOnMap: "मानचित्र पर देखें", approximate: "अनुमानित स्थान", exact: "सर्वेक्षित स्थान", references: "आयुर्वेदिक संदर्भ",
+    location: "परिसर में", viewOnMap: "मानचित्र पर देखें", approximate: "अनुमानित स्थान", exact: "सर्वेक्षित स्थान", spotPhotos: "इस स्थान की तस्वीरें", references: "आयुर्वेदिक संदर्भ",
     source: "स्रोत", text: "ग्रंथ", sectionChapter: "खंड / अध्याय", reference: "संदर्भ", verse: "श्लोक", verified: "सत्यापित", pending: "संदर्भ सत्यापन लंबित",
     noRefs: "सत्यापित ज्ञानकोष में संदर्भ उपलब्ध नहीं है।", noLocation: "स्थान अभी दर्ज नहीं है।", back: "सभी पौधे",
   },
-  map: { title: "परिसर पौधा मानचित्र", sub: "पौधा देखने के लिए चिह्न पर टैप करें। रंग श्रेणी दर्शाते हैं।", viewPlant: "पौधा देखें", approximate: "अनुमानित", legend: "संकेत", filter: "श्रेणी दिखाएँ" },
+  map: { title: "परिसर पौधा मानचित्र", sub: "पौधा देखने के लिए चिह्न पर टैप करें। रंग श्रेणी दर्शाते हैं।", viewPlant: "पौधा देखें", approximate: "अनुमानित", legend: "श्रेणियाँ", filter: "श्रेणी दिखाएँ", location: "स्थान", approximateNote: "अनुमानित स्थान, अभी सर्वेक्षण नहीं हुआ", plantsLabel: "पौधे मानचित्र पर", areasLabel: "परिसर क्षेत्र",
+    guide: "मुझे यहाँ ले चलें", stopGuide: "मार्गदर्शन बंद करें", directions: "रास्ता", locating: "आपका स्थान खोजा जा रहा है…", head: "जाएँ", away: "दूर", walk: "मिनट पैदल", accuracy: "GPS सटीकता",
+    arrived: "आप पहुँच गए। आसपास पौधा देखें।", outside: "आप परिसर मानचित्र से बाहर हैं। पहले परिसर तक पहुँचने के लिए 'रास्ता' बटन का उपयोग करें।",
+    denied: "स्थान की अनुमति नहीं मिली। ब्राउज़र सेटिंग में अनुमति दें।", insecure: "लाइव मार्गदर्शन के लिए https साइट (या localhost) चाहिए।", unavailable: "आपका स्थान नहीं मिल सका। खुले में प्रयास करें।",
+    approxTarget: "इस पौधे का स्थान अनुमानित है, इसलिए आसपास देखें।", straightLine: "रेखा केवल दिशा दिखाती है, पगडंडी नहीं। उस दिशा में परिसर के रास्तों पर चलें।", you: "आप यहाँ हैं",
+    dirs: ["उत्तर", "उत्तर-पूर्व", "पूर्व", "दक्षिण-पूर्व", "दक्षिण", "दक्षिण-पश्चिम", "पश्चिम", "उत्तर-पश्चिम"] },
   chat: {
     title: "हरिtima से पूछें", sub: "परिसर के किसी पौधे या किसी समस्या के बारे में पूछें। हर उत्तर हरिtima के सत्यापित अभिलेखों से बनता है।",
     placeholder: "जैसे: पाचन के लिए परंपरागत रूप से कौन-से पौधे उपयोग होते हैं?", send: "पूछें", thinking: "ज्ञानकोष में खोज रहे हैं…",
@@ -100,6 +112,8 @@ const hi: Dictionary = {
   contact: { title: "संपर्क और सुझाव", sub: "कोई पौधा छूट गया, स्थान गलत है, या कोई स्रोत जाँचना है? हमें बताइए।", name: "नाम", email: "ईमेल", subject: "विषय", message: "संदेश", send: "सुझाव भेजें", sent: "सुझाव भेज दिया गया। धन्यवाद।", error: "सुझाव नहीं भेजा जा सका। जानकारी जाँचकर फिर प्रयास करें।" },
   auth: { title: "हरिtima में लॉग इन", email: "ईमेल", password: "पासवर्ड", submit: "लॉग इन", invalid: "ईमेल या पासवर्ड गलत है।", noAccount: "नए हैं?", register: "खाता बनाएँ", registerTitle: "अपना खाता बनाएँ", name: "नाम", create: "खाता बनाएँ", haveAccount: "पहले से खाता है?" },
   footer: { tagline: "प्रकृति, ज्ञान और पारंपरिक प्रज्ञा का संगम।", academic: "देव संस्कृति विश्वविद्यालय, शांतिकुंज, हरिद्वार में एक शैक्षणिक परियोजना के रूप में विकसित।", privacy: "गोपनीयता", terms: "शर्तें" },
+  trails: { title: "परिसर भ्रमण पथ", sub: "परिसर के पौधों के बीच निर्देशित भ्रमण। मानचित्र पर क्रमांकित पड़ावों का अनुसरण करें।", stops: "पड़ाव", stop: "पड़ाव", walk: "मिनट पैदल", km: "कि.मी.", all: "सभी पथ", none: "अभी कोई पथ प्रकाशित नहीं है।", approximate: "कुछ पड़ावों के स्थान अनुमानित हैं, इसलिए मार्ग को केवल मार्गदर्शन मानें।", viewPlant: "पौधा देखें", route: "मार्ग" },
+  seasons: { title: "ऋतु कैलेंडर", sub: "परिसर के कौन-से पौधे किस महीने में प्रायः फूलते और फलते हैं।", thisMonth: "इस महीने", flowering: "पुष्पन", fruiting: "फलन", nothing: "इस महीने के लिए अभी कुछ दर्ज नहीं है।", calendar: "महीनेवार", onCampus: "परिसर में ऋतुएँ", notRecorded: "ऋतु अभी दर्ज नहीं है।", note: "महीने हरिद्वार के लिए सामान्य हैं और मौसम के अनुसार बदल सकते हैं।", months: ["जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"], short: ["जन", "फ़र", "मार्च", "अप्रै", "मई", "जून", "जुला", "अग", "सित", "अक्टू", "नव", "दिस"] },
   common: { loading: "लोड हो रहा है…", disclaimerShort: "केवल शैक्षिक जानकारी — चिकित्सीय सलाह नहीं।" },
 };
 

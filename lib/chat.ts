@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { aiEnabled, generateJSON } from "@/lib/ai";
+import { chatEnabled, generateJSON } from "@/lib/ai";
 import { retrievePlantIds } from "@/lib/rag";
 import { tokenize } from "@/lib/search";
 
@@ -194,7 +194,7 @@ export async function answerQuestion(question: string, lang: "en" | "hi"): Promi
   let context = "";
   let llmUsed = false;
 
-  if (aiEnabled()) {
+  if (chatEnabled()) {
     const records = ids
       .map((id) => byId.get(id))
       .filter(Boolean)

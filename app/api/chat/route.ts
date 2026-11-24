@@ -4,6 +4,7 @@ import { handle, HttpError } from "@/lib/guards";
 import { chatSchema } from "@/lib/validation";
 import { answerQuestion } from "@/lib/chat";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
+import { logChatQuery } from "@/lib/analytics";
 
 export const maxDuration = 30;
 
@@ -15,7 +16,9 @@ export const POST = handle(async (req: Request) => {
   if (!limit.ok) return Response.json({ error: "Too many requests" }, { status: 429, headers: { "Retry-After": String(limit.retryAfter) } });
 
   const { message, conversationId, lang } = chatSchema.parse(await req.json());
+  const started = performance.now();
   const answer = await answerQuestion(message, lang);
+  await logChatQuery(message, lang, answer, performance.now() - started);
 
   // History is only stored for signed-in users, and only in their own conversations.
   let convId: string | undefined;

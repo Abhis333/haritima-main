@@ -11,11 +11,12 @@
  *  - Traditional uses are phrased as general, widely documented associations for education only.
  */
 import { PrismaClient, type Availability, type PlantType } from "@prisma/client";
+import { SOURCE_SUGGESTIONS, SUGGESTION_NOTE } from "./reference-suggestions";
 
 const prisma = new PrismaClient();
 
-const LAT = Number(process.env.NEXT_PUBLIC_CAMPUS_LAT || 29.9985);
-const LNG = Number(process.env.NEXT_PUBLIC_CAMPUS_LNG || 78.1985);
+const LAT = Number(process.env.NEXT_PUBLIC_CAMPUS_LAT || 29.998143);
+const LNG = Number(process.env.NEXT_PUBLIC_CAMPUS_LNG || 78.192779);
 const at = (dLat: number, dLng: number) => ({ latitude: +(LAT + dLat).toFixed(6), longitude: +(LNG + dLng).toFixed(6) });
 
 const PENDING = "Reference pending verification";
@@ -463,14 +464,18 @@ async function main() {
     await prisma.ayurvedicReference.deleteMany({ where: { plantId: plant.id } });
     await prisma.plantLocation.deleteMany({ where: { plantId: plant.id } });
 
+    const suggestion = SOURCE_SUGGESTIONS[p.slug];
     const ref = await prisma.ayurvedicReference.create({
       data: {
         plantId: plant.id,
-        textName: referenceText,
+        textName: suggestion?.textName ?? referenceText,
+        author: suggestion?.author,
         citation: PENDING,
-        sourceType: p.slug === "lemongrass" ? "BOTANICAL_REFERENCE" : "CLASSICAL_AYURVEDIC_TEXT",
+        sourceType: suggestion?.sourceType ?? (p.slug === "lemongrass" ? "BOTANICAL_REFERENCE" : "CLASSICAL_AYURVEDIC_TEXT"),
         verificationStatus: "PENDING",
-        notes: "Seed placeholder. Add the exact text, chapter/section and verse only after checking the original source, then mark VERIFIED.",
+        notes: suggestion
+          ? SUGGESTION_NOTE
+          : "Seed placeholder. Add the exact text, chapter/section and verse only after checking the original source, then mark VERIFIED.",
       },
     });
 

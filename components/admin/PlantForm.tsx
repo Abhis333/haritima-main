@@ -32,8 +32,12 @@ export type PlantFormValue = {
   imageUrl: string | null;
   imageAlt: string | null;
   featured: boolean;
+  floweringMonths?: number[];
+  fruitingMonths?: number[];
   categoryIds: string[];
 };
+
+const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const LIST_FIELDS = ["otherNames", "traditionalUses", "traditionalUsesHi", "plantParts"] as const;
 
@@ -52,6 +56,8 @@ export function PlantForm({ initial, categories }: { initial?: PlantFormValue; c
     for (const k of LIST_FIELDS) body[k] = String(fd.get(k) ?? "").split("\n").map((s) => s.trim()).filter(Boolean);
     body.featured = fd.get("featured") === "on";
     body.categoryIds = fd.getAll("categoryIds");
+    body.floweringMonths = fd.getAll("floweringMonths").map(Number);
+    body.fruitingMonths = fd.getAll("fruitingMonths").map(Number);
     const res = await fetch(v?.id ? `/api/plants/${v.id}` : "/api/plants", {
       method: v?.id ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
@@ -121,6 +127,23 @@ export function PlantForm({ initial, categories }: { initial?: PlantFormValue; c
           </div>
         </div>
         <label className="flex items-center gap-2"><input type="checkbox" name="featured" defaultChecked={v?.featured} className="h-4 w-4 accent-forest" /> Feature on home page</label>
+      </fieldset>
+
+      <fieldset className="grid gap-4 rounded-xl border border-parch bg-card p-5">
+        <legend className="px-1 text-lg font-medium text-forest">Seasons on campus</legend>
+        <p className="text-xs text-muted-foreground">Tick the months this plant usually flowers or fruits on campus. Used by the seasonal calendar.</p>
+        {([["floweringMonths", "Flowering months"], ["fruitingMonths", "Fruiting months"]] as const).map(([name, label]) => (
+          <div key={name}>
+            <p className="text-sm font-medium text-forest">{label}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {MONTH_SHORT.map((m, i) => (
+                <label key={m} className="flex items-center gap-1.5 rounded-md border border-parch px-2.5 py-1 text-sm">
+                  <input type="checkbox" name={name} value={i + 1} defaultChecked={v?.[name]?.includes(i + 1)} className="accent-forest" /> {m}
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
       </fieldset>
 
       <fieldset className="grid gap-4 rounded-xl border border-parch bg-card p-5 md:grid-cols-2">

@@ -8,6 +8,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Pin the project root so a stray lockfile in a parent folder isn't picked up.
+  outputFileTracingRoot: __dirname,
+  // Dev only: let phones/other PCs on the LAN load the dev server's scripts (e.g. http://10.x.x.x:3000).
+  allowedDevOrigins: ["10.*.*.*", "192.168.*.*", "172.*.*.*"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },

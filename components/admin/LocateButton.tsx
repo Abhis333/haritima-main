@@ -30,9 +30,12 @@ export function LocateButton() {
     const approx = form.elements.namedItem("isApproximate");
     const surveyed = accuracy <= SURVEY_ACCURACY_M;
     if (approx instanceof HTMLInputElement) approx.checked = !surveyed;
+    // Seed rows carry a "(approximate — to be confirmed with GPS)" note; drop it once the point is surveyed.
+    const desc = form.elements.namedItem("locationDescription");
+    if (surveyed && desc instanceof HTMLInputElement) desc.value = desc.value.replace(/\s*\(approximate[^)]*\)\s*$/i, "");
     setMsg(
       surveyed
-        ? `Location filled (±${accuracy} m). “Approximate” was unticked.`
+        ? `Location filled (±${accuracy} m). “Approximate” was unticked. Check the area name and description, then Save.`
         : `Location filled, but accuracy is only ±${accuracy} m, so it stays marked approximate. Move into open sky and try again.`,
     );
   }

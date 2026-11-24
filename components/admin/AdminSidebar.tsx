@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BookOpen, Brain, ClipboardCheck, FolderTree, Gauge, History, Leaf, MapPin, Menu, MessageSquare, ScrollText, Settings, Users, X } from "lucide-react";
+import { BarChart3, BookOpen, Brain, ClipboardCheck, Footprints, FolderTree, Gauge, History, Leaf, MapPin, Menu, MessageSquare, ScrollText, Settings, Users, X } from "lucide-react";
 import { Logo } from "../Logo";
 import { cn } from "@/lib/utils";
 
@@ -11,11 +11,13 @@ const items = [
   { href: "/admin", label: "Dashboard", icon: Gauge },
   { href: "/admin/plants", label: "Plants", icon: Leaf },
   { href: "/admin/locations", label: "Plant locations", icon: MapPin },
+  { href: "/admin/trails", label: "Walking trails", icon: Footprints },
   { href: "/admin/references", label: "Ayurvedic references", icon: BookOpen },
   { href: "/admin/mantras", label: "Mantras", icon: ScrollText },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/knowledge", label: "Chatbot knowledge base", icon: Brain },
   { href: "/admin/evaluation", label: "Chatbot evaluation", icon: ClipboardCheck },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/admin/audit", label: "Audit log", icon: History },

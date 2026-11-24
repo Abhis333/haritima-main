@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useId, useState, useTransition } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { Select } from "./ui/select";
@@ -89,7 +89,8 @@ export function PlantFilters({ categories, areas, uses }: { categories: Option[]
 }
 
 function FilterSelect({ label, value, onChange, options, all }: { label: string; value: string; onChange: (v: string) => void; options: Option[]; all: string }) {
-  const id = `f-${label.replace(/\W+/g, "-")}`;
+  // useId, not the label: Hindi labels are all non-\w characters and would collapse to the same id.
+  const id = useId();
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="text-sm text-muted-foreground">{label}</label>

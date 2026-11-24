@@ -9,8 +9,14 @@ export default async function AdminKnowledge() {
     prisma.knowledgeDocument.count({ where: { NOT: { embedding: { isEmpty: true } } } }),
     prisma.plantBenefit.findMany({ include: { plant: { select: { commonName: true } }, reference: { select: { textName: true, verificationStatus: true } } }, orderBy: [{ concern: "asc" }] }),
     prisma.plant.findMany({ select: { id: true, commonName: true }, orderBy: { commonName: "asc" } }),
-    prisma.ayurvedicReference.findMany({ where: { verificationStatus: "VERIFIED" }, select: { id: true, textName: true, plant: { select: { commonName: true } } } }),
+    prisma.ayurvedicReference.findMany({ select: { id: true, textName: true, verificationStatus: true, plant: { select: { commonName: true } } }, orderBy: { createdAt: "asc" } }),
   ]);
+  // Offer every non-rejected reference (pending ones are what faculty verify), plus any reference a benefit already
+  // links to, so editing a benefit never silently clears its link because the option is missing.
+  const linked = new Set(benefits.map((b) => b.referenceId).filter(Boolean));
+  const refOptions = refs
+    .filter((r) => r.verificationStatus !== "REJECTED" || linked.has(r.id))
+    .map((r) => ({ value: r.id, label: `${r.plant.commonName} — ${r.textName} (${r.verificationStatus})` }));
   return (
     <div className="space-y-10">
       <section className="rounded-xl border border-parch bg-card p-6">
@@ -44,7 +50,7 @@ export default async function AdminKnowledge() {
           { name: "concern", label: "Concern keyword (English)", type: "text", required: true, help: "Short and lowercase: sleep, digestion, cough, skin…" },
           { name: "concernHi", label: "Concern (Hindi)", type: "text" },
           { name: "plantPart", label: "Plant part", type: "text" },
-          { name: "referenceId", label: "Supporting verified reference", type: "select", options: refs.map((r) => ({ value: r.id, label: `${r.plant.commonName} — ${r.textName}` })) },
+          { name: "referenceId", label: "Supporting reference", type: "select", options: refOptions, help: "Only VERIFIED references are cited in chatbot answers; pending ones await faculty review." },
           { name: "description", label: "Traditional association, as documented", type: "textarea", required: true },
         ]}
       />

@@ -16,7 +16,8 @@ export async function getMapPoints(lang: Lang): Promise<MapPoint[]> {
       hindiName: l.plant.hindiName,
       scientificName: l.plant.scientificName,
       description: lang === "hi" && l.plant.descriptionHi ? l.plant.descriptionHi : l.plant.description,
-      imageUrl: l.plant.imageUrl,
+      // A photo taken at this spot beats the plant's general photo.
+      imageUrl: l.photos[0] ?? l.plant.imageUrl,
       category: c ? (lang === "hi" ? c.nameHi : c.nameEn) : "Other",
       categorySlug: c?.slug ?? "other",
       color: c?.color ?? "#4e7a3a",

@@ -9,7 +9,7 @@ An educational Q&A assistant that answers only from the Haritima database.
 - Admin: `app/admin/knowledge/page.tsx` (chunk and embedding counts, benefits editor, reindex button), `app/admin/evaluation/page.tsx` (evaluation, see below)
 
 ## Pipeline
-1. **Indexing** (`indexPlant`): builds these chunks: one `plant` summary, one `use` chunk per traditional use and per benefit, and one `reference` chunk per **VERIFIED** reference. Chunks are embedded with Gemini (`RETRIEVAL_DOCUMENT`, 768 dimensions, normalized) **first**. Then the plant's old `KnowledgeDocument` rows are deleted and the new ones inserted in **one transaction**, so a failure never leaves the plant without chunks. If embedding fails, the chunks are still saved, but without vectors. Plant, reference and `adminCrud` routes `await` the re-index, so it isn't cut off when the serverless response ends. `reindexAll` builds every plant's chunks and embeds them in batches of 90 chunks per request, not one request per plant.
+1. **Indexing** (`indexPlant`): builds these chunks: one `plant` summary, one `use` chunk per traditional use and per benefit, and one `reference` chunk per **VERIFIED** reference. Chunks are embedded with Gemini (`RETRIEVAL_DOCUMENT`, 768 dimensions, normalized) **first**. Then the plant's old `KnowledgeDocument` rows are deleted and the new ones inserted in **one transaction**, so a failure never leaves the plant without chunks. If embedding fails (or the API returns a different number of vectors than chunks), the chunks are still saved and any chunk whose text is unchanged keeps its previous vector; only new or edited chunks lose their vector. `reindexAll` returns `{ plants, chunks, embeddingsFailed }` and the Reindex button reports a failed embedding instead of plain success. Plant, reference and `adminCrud` routes `await` the re-index, so it isn't cut off when the serverless response ends. `reindexAll` builds every plant's chunks and embeds them in batches of 90 chunks per request, not one request per plant.
 2. **Retrieval** (`retrievePlantIds`) scores plants using three signals:
    - cosine similarity against every embedded chunk, computed in JS (threshold `RAG_MIN_SIMILARITY`, default 0.6, top 12)
    - full-text search on chunk content (a failing query is logged and counts as no hits)
@@ -39,4 +39,10 @@ An educational Q&A assistant that answers only from the Haritima database.
 - The LLM never writes citations, book names or verses. The system prompt forbids them, and the code attaches references itself.
 - No diagnosis, cures or doses. Only "traditionally described" associations are allowed.
 - Only VERIFIED references reach the knowledge base or the answer.
-- Any change to plant, benefit, location or reference data must re-index that plant.
+- Any change to plant, benefit, location or reference data must re-index that plant (and, when a record moves between plants, the previous plant too).
+
+## Providers
+- Embeddings always use Gemini (`AI_API_KEY`, `AI_EMBEDDING_MODEL`).
+- Answers use Gemini by default. With `AI_CHAT_PROVIDER=groq` and `GROQ_API_KEY` set, `generateJSON()` in `lib/ai.ts` calls Groq's OpenAI-compatible API in JSON mode (`GROQ_CHAT_MODEL`, default `llama-3.3-70b-versatile`) and falls back to Gemini if the call fails and `AI_API_KEY` is set.
+- `chatEnabled()` gates the answer step (Groq or Gemini); `aiEnabled()` gates embeddings. Admin → Settings shows the active provider via `chatModelLabel()`.
+- After switching provider, re-run Admin → Chatbot evaluation, especially the Hindi group.

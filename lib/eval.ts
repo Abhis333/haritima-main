@@ -43,23 +43,25 @@ const other = (id: string, group: string, question: string, kind: EvalKind, lang
   id, group, question, lang, kind, expected: [],
 });
 
-const DIGESTION = ["aloe-vera", "amla", "shatavari", "lemongrass"];
-const SLEEP = ["ashwagandha", "brahmi"];
-const STRESS = ["tulsi", "ashwagandha", "brahmi"];
+// Includes plants from prisma/seed-extra.ts; plants missing from the database simply never match.
+const DIGESTION = ["aloe-vera", "amla", "shatavari", "lemongrass", "bael", "haritaki", "bibhitaki", "adrak", "pudina"];
+const SLEEP = ["ashwagandha", "brahmi", "shankhpushpi"];
+const STRESS = ["tulsi", "ashwagandha", "brahmi", "shankhpushpi"];
+const COUGH = ["tulsi", "lemongrass", "vasaka", "bibhitaki", "haldi", "adrak"];
 
 export const EVAL_CASES: EvalCase[] = [
   plants("c01", "Concern (English)", "Which plants help with sleep?", SLEEP),
   plants("c02", "Concern (English)", "Plants for better digestion", DIGESTION),
-  plants("c03", "Concern (English)", "What is good for cough and cold?", ["tulsi", "lemongrass"]),
+  plants("c03", "Concern (English)", "What is good for cough and cold?", COUGH),
   plants("c04", "Concern (English)", "Which plants support immunity?", ["tulsi", "amla", "giloy"]),
-  plants("c05", "Concern (English)", "Plants used for skin care", ["neem", "aloe-vera"]),
-  plants("c06", "Concern (English)", "Something to improve memory and learning", ["brahmi"]),
+  plants("c05", "Concern (English)", "Plants used for skin care", ["neem", "aloe-vera", "haldi", "peepal"]),
+  plants("c06", "Concern (English)", "Something to improve memory and learning", ["brahmi", "shankhpushpi"]),
   plants("c07", "Concern (English)", "Plants that calm the mind and reduce stress", STRESS),
-  plants("c08", "Concern (English)", "Which plant is traditionally used for fever?", ["giloy"]),
+  plants("c08", "Concern (English)", "Which plant is traditionally used for fever?", ["giloy", "kalmegh"]),
   plants("c09", "Concern (English)", "Plants associated with heart health", ["arjuna"]),
-  plants("c10", "Concern (English)", "Natural hair care plants", ["amla"]),
-  plants("c11", "Concern (English)", "What can be used for oral hygiene?", ["neem"]),
-  plants("c12", "Concern (English)", "Plants for women's health", ["shatavari"]),
+  plants("c10", "Concern (English)", "Natural hair care plants", ["amla", "gudhal"]),
+  plants("c11", "Concern (English)", "What can be used for oral hygiene?", ["neem", "bargad", "peepal"]),
+  plants("c12", "Concern (English)", "Plants for women's health", ["shatavari", "ashoka"]),
   plants("c13", "Concern (English)", "Herbs for strength and vitality", ["ashwagandha"]),
   plants("c14", "Concern (English)", "Something soothing for minor burns", ["aloe-vera"]),
 
@@ -70,7 +72,7 @@ export const EVAL_CASES: EvalCase[] = [
 
   plants("h01", "Hindi", "नींद के लिए कौन से पौधे हैं?", SLEEP, "hi"),
   plants("h02", "Hindi", "पाचन के लिए पौधे", DIGESTION, "hi"),
-  plants("h03", "Hindi", "खाँसी में उपयोगी पौधे", ["tulsi", "lemongrass"], "hi"),
+  plants("h03", "Hindi", "खाँसी में उपयोगी पौधे", COUGH, "hi"),
   plants("h04", "Hindi", "गिलोय के बारे में बताइए", ["giloy"], "hi"),
   plants("h05", "Hindi", "तनाव कम करने वाले पौधे", STRESS, "hi"),
 

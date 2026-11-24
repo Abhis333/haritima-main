@@ -10,6 +10,7 @@ import { MantraCard } from "@/components/MantraAnimation";
 import { Button } from "@/components/ui/button";
 import { getMapPoints } from "@/lib/map-data";
 import { BotanicalBackdrop } from "@/components/BotanicalBackdrop";
+import { PUBLIC_MANTRA_WHERE } from "@/lib/public-select";
 
 export default async function HomePage() {
   const { t, lang } = await getDictionary();
@@ -18,7 +19,7 @@ export default async function HomePage() {
     prisma.plant.findMany({ where: { featured: true }, include: { categories: true }, take: 6, orderBy: { commonName: "asc" } }),
     prisma.plantCategory.findMany({ include: { _count: { select: { plants: true } } }, orderBy: { nameEn: "asc" } }),
     getMapPoints(lang),
-    prisma.mantra.findFirst({ where: { featured: true }, orderBy: { createdAt: "asc" } }),
+    prisma.mantra.findFirst({ where: { ...PUBLIC_MANTRA_WHERE, featured: true }, orderBy: { createdAt: "asc" } }),
     prisma.plant.count(),
     prisma.plant.count({ where: { categories: { some: { slug: { in: ["medicinal", "ayurvedic"] } } } } }),
     prisma.plantLocation.count(),

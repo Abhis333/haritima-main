@@ -4,6 +4,7 @@ import { audit } from "@/lib/audit";
 import { indexPlant } from "@/lib/rag";
 
 type Delegate = {
+  findUniqueOrThrow(args: { where: { id: string } }): Promise<{ id: string; plantId?: string | null }>;
   create(args: { data: unknown }): Promise<{ id: string; plantId?: string | null }>;
   update(args: { where: { id: string }; data: unknown }): Promise<{ id: string; plantId?: string | null }>;
   delete(args: { where: { id: string } }): Promise<{ id: string; plantId?: string | null }>;
@@ -14,8 +15,11 @@ type Delegate = {
  * for plant-linked records, re-indexing of the RAG knowledge base.
  */
 export function adminCrud<S extends ZodTypeAny>(entity: string, delegate: () => Delegate, schema: S, reindex = false) {
-  const after = async (row: { plantId?: string | null }) => {
-    if (reindex && row.plantId) await indexPlant(row.plantId).catch(console.error);
+  /** Re-indexes every affected plant: when a record moves to another plant, both the old and the new one. */
+  const after = async (...rows: ({ plantId?: string | null } | null)[]) => {
+    if (!reindex) return;
+    const ids = new Set(rows.map((r) => r?.plantId).filter((id): id is string => Boolean(id)));
+    await Promise.all([...ids].map((id) => indexPlant(id).catch(console.error)));
   };
   return {
     POST: handle(async (req: Request) => {
@@ -30,9 +34,10 @@ export function adminCrud<S extends ZodTypeAny>(entity: string, delegate: () => 
       const admin = await requireAdmin();
       const { id } = await params;
       const data: z.infer<S> = schema.parse(await req.json());
+      const before = reindex ? await delegate().findUniqueOrThrow({ where: { id } }) : null;
       const row = await delegate().update({ where: { id }, data });
       await audit(admin.id, "UPDATE", entity, id, data as never);
-      await after(row);
+      await after(before, row);
       return Response.json(row);
     }),
     DELETE: handle(async (_req: Request, { params }: { params: Promise<{ id: string }> }) => {
