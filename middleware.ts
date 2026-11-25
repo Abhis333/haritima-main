@@ -45,9 +45,9 @@ export default auth((req) => {
 
   // First line of defence for admin pages. Every admin API re-checks the role on the server.
   if (pathname.startsWith("/admin") && req.auth?.user?.role !== "ADMIN") {
-    const url = new URL("/login", req.nextUrl.origin);
-    url.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(url);
+    // Relative Location: behind Railway's proxy req.nextUrl.origin can be the internal https://localhost:8080.
+    const location = `/login?${new URLSearchParams({ callbackUrl: pathname })}`;
+    return new NextResponse(null, { status: 307, headers: { Location: location } });
   }
   return NextResponse.next();
 });

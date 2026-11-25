@@ -21,3 +21,7 @@ Email and password sign-in with Auth.js v5, JWT sessions, and two roles: `USER` 
 ## Rules
 - Middleware is only the first line of defense. Every admin API handler must call `requireAdmin()` itself.
 - Admin accounts can only be created through the script or by an existing admin. Public sign-up never creates one.
+
+## Redirects behind a proxy
+- Login (`app/(public)/login/page.tsx`) and logout (`components/Navbar.tsx`) call Auth.js with `redirect: false` and then `redirect()` to a same-site relative path; the `/admin` guard in `middleware.ts` returns a relative `Location`. Behind Railway the request origin can be the internal `https://localhost:8080`, so no redirect may be built from it.
+- Set `AUTH_URL` to the public site address in production (see `.env.example`).

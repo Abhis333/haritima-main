@@ -2,7 +2,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { aiEnabled, cosine, embed } from "@/lib/ai";
-import { searchPlantIds, toTsQuery } from "@/lib/search";
+import { hindiFoldSql, searchPlantIds, toTsQuery } from "@/lib/search";
 
 const INDEX_INCLUDE = {
   references: { where: { verificationStatus: "VERIFIED" as const } },
@@ -147,11 +147,13 @@ export async function retrievePlantIds(question: string, limit = 5): Promise<str
   if (tsq) {
     // A tsquery parse error degrades to "no full-text hits" instead of failing the whole chat request.
     type Row = { plantId: string | null; rank: number };
+    // Chunk text is folded like the query (normalizeHindi), so Hindi spelling variants match.
+    const doc = Prisma.sql`to_tsvector('simple', ${hindiFoldSql(Prisma.sql`content`)})`;
     const rows: Row[] = await prisma
       .$queryRaw<Row[]>(Prisma.sql`
-      SELECT "plantId", ts_rank(to_tsvector('simple', content), to_tsquery('simple', ${tsq}))::float AS rank
+      SELECT "plantId", ts_rank(${doc}, to_tsquery('simple', ${tsq}))::float AS rank
       FROM "KnowledgeDocument"
-      WHERE to_tsvector('simple', content) @@ to_tsquery('simple', ${tsq})
+      WHERE ${doc} @@ to_tsquery('simple', ${tsq})
       ORDER BY rank DESC LIMIT 20`)
       .catch((e: unknown): Row[] => {
         console.error("Knowledge full-text search failed", e);

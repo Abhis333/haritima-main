@@ -29,3 +29,6 @@ Browse, filter and search the campus plant collection; each plant has a detail p
 - `prisma/seed.ts` (`npm run db:seed`): categories, the 10 core plants and mantras. Re-running it **resets** benefits, references and locations of those 10 plants.
 - `prisma/seed-extra.ts` (`npm run db:seed-extra`): 16 more plants (Peepal, Banyan, Bael, Haritaki, Bibhitaki, Vasaka, Turmeric, Ginger, Mint, Ashoka, Hibiscus, Moringa, Kalmegh, Punarnava, Shankhpushpi, Marigold). Add-only: existing slugs are skipped. All references PENDING, all locations approximate.
 - After either script, run Admin → Knowledge → Reindex so the chatbot gets embeddings. `lib/eval.ts` expected plants include both sets.
+
+## Hindi spelling variants
+- `normalizeHindi()` in `lib/search.ts` folds queries (NFC, chandrabindu ँ → anusvara ं, nukta and zero-width joiners removed); `hindiFoldSql()` applies the same folding to stored text in SQL, for the catalogue search (`searchPlantIds`, including Hindi/Sanskrit name ILIKE) and the chatbot chunk full-text search (`lib/rag.ts`). So "खाँसी" and "खांसी", or "कब्ज़" and "कब्ज", match. Stop-words and synonym keys/values are folded the same way; Hindi synonym keys map to English terms.

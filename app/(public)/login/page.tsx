@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { signIn } from "@/lib/auth";
 import { getDictionary } from "@/lib/i18n/server";
@@ -29,11 +30,14 @@ export default async function LoginPage() {
     "use server";
     const redirectTo = safeRedirectPath(String(fd.get("callbackUrl") ?? "/"));
     try {
-      await signIn("credentials", { email: fd.get("email"), password: fd.get("password"), redirectTo });
+      // redirect: false — Auth.js would otherwise build an absolute URL from its own idea of the host,
+      // which behind a proxy can be the internal address (e.g. https://localhost:8080).
+      await signIn("credentials", { email: fd.get("email"), password: fd.get("password"), redirect: false });
     } catch (e) {
       if (e instanceof AuthError) return { error: "invalid" };
-      throw e; // lets Next.js perform the redirect
+      throw e;
     }
+    redirect(redirectTo); // same-site relative path only (see safeRedirectPath)
   }
 
   return (

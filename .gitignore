@@ -9,3 +9,7 @@ next-env.d.ts
 coverage
 dist
 *.log
+
+# Throwaway test accounts used for report testing (never commit)
+test-accounts.local.md
+.tmp-testing/

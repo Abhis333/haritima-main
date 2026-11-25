@@ -1,6 +1,18 @@
 import { Prisma, type Availability, type PlantType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
+/**
+ * Folds common Hindi spelling variants so "खाँसी" and "खांसी" (or "कब्ज़" and "कब्ज") match:
+ * NFC, chandrabindu (ँ) → anusvara (ं), nukta (़) removed, zero-width joiners removed.
+ */
+export function normalizeHindi(s: string) {
+  return s.normalize("NFC").replace(/ँ/g, "ं").replace(/[़‌‍]/g, "").normalize("NFC");
+}
+
+/** The same folding in SQL, applied to stored text before full-text search or ILIKE matching. */
+export const hindiFoldSql = (expr: Prisma.Sql) =>
+  Prisma.sql`translate(normalize(${expr}, NFC), U&'\\0901\\093C\\200C\\200D', U&'\\0902')`;
+
 const STOPWORDS = new Set(
   [
     "a an the i me my is am are was be have has had do does which what who where when how for of to in on at and or with from about can could should tell show plants plant campus near any some traditionally used use this that it its please",
@@ -10,7 +22,8 @@ const STOPWORDS = new Set(
     "ke ka ki ko se mein hai hain liye kaun konse kaunse kya kaise koi kuch wale wali paudhe paudha podhe batao bataiye",
   ]
     .join(" ")
-    .split(" "),
+    .split(" ")
+    .map(normalizeHindi),
 );
 
 /** Very light English stemming so "sleeping" also matches "sleep". Devanagari tokens pass through. */
@@ -19,28 +32,37 @@ function stem(w: string) {
   return w.replace(/(ingly|ing|edly|ed|ies|es|s)$/, "") || w;
 }
 
-// Everyday words → terms that appear in Ayurvedic records.
-const SYNONYMS: Record<string, string[]> = {
-  sleep: ["nidra", "insomnia", "anidra", "नींद", "निद्रा"],
-  insomnia: ["sleep", "nidra"],
-  digest: ["agni", "appetite", "digestion", "पाचन"],
-  stress: ["anxiety", "calm", "rasayana", "तनाव"],
-  memory: ["medhya", "cognition", "स्मृति"],
-  immunity: ["rasayana", "vyadhikshamatva", "रोग"],
-  cough: ["kasa", "respiratory", "खांसी"],
-  cold: ["pratishyaya", "respiratory", "सर्दी"],
-  skin: ["twak", "kushtha", "त्वचा"],
-  fever: ["jwara", "ज्वर", "बुखार"],
-  heart: ["hridya", "cardiac", "हृदय"],
-  hair: ["kesha", "बाल"],
-  नींद: ["sleep", "nidra"],
-  पाचन: ["digest", "agni"],
-};
+// Everyday words → terms that appear in Ayurvedic records. Hindi keys let Hindi questions also match
+// English record text. Keys and values are folded with normalizeHindi below, so either spelling works.
+const SYNONYMS: Record<string, string[]> = Object.fromEntries(
+  Object.entries({
+    sleep: ["nidra", "insomnia", "anidra", "नींद", "निद्रा"],
+    insomnia: ["sleep", "nidra"],
+    digest: ["agni", "appetite", "digestion", "पाचन"],
+    stress: ["anxiety", "calm", "rasayana", "तनाव"],
+    memory: ["medhya", "cognition", "स्मृति"],
+    immunity: ["rasayana", "vyadhikshamatva", "रोग"],
+    cough: ["kasa", "respiratory", "खाँसी"],
+    cold: ["pratishyaya", "respiratory", "सर्दी"],
+    skin: ["twak", "kushtha", "त्वचा"],
+    fever: ["jwara", "ज्वर", "बुखार"],
+    heart: ["hridya", "cardiac", "हृदय"],
+    hair: ["kesha", "बाल"],
+    नींद: ["sleep", "nidra"],
+    पाचन: ["digest", "agni"],
+    खाँसी: ["cough", "kasa"],
+    सर्दी: ["cold"],
+    तनाव: ["stress"],
+    त्वचा: ["skin"],
+    बुखार: ["fever", "ज्वर"],
+    ज्वर: ["fever"],
+    स्मृति: ["memory", "medhya"],
+    बाल: ["hair"],
+  }).map(([k, v]) => [normalizeHindi(k), v.map(normalizeHindi)]),
+);
 
 export function tokenize(q: string) {
-  const words = q
-    .toLowerCase()
-    .normalize("NFC")
+  const words = normalizeHindi(q.toLowerCase())
     .split(/[^\p{L}\p{M}\p{N}]+/u)
     // Tokens must contain a letter or digit; mark-only tokens could produce an invalid tsquery.
     .filter((w) => w.length > 1 && !STOPWORDS.has(w) && /[\p{L}\p{N}]/u.test(w))
@@ -62,22 +84,23 @@ export function toTsQuery(q: string) {
 
 export async function searchPlantIds(q: string): Promise<string[]> {
   const tsq = toTsQuery(q);
-  const like = `%${q.replace(/[%_\\]/g, (m) => `\\${m}`)}%`;
+  const like = `%${normalizeHindi(q).replace(/[%_\\]/g, (m) => `\\${m}`)}%`;
+  const fold = (col: string) => hindiFoldSql(Prisma.raw(col));
   const rows = await prisma.$queryRaw<{ id: string; rank: number }[]>(Prisma.sql`
     SELECT p.id,
       ${tsq ? Prisma.sql`ts_rank(d.doc, to_tsquery('simple', ${tsq}))` : Prisma.sql`0`}::float AS rank
     FROM "Plant" p
     CROSS JOIN LATERAL (
-      SELECT to_tsvector('simple', concat_ws(' ',
+      SELECT to_tsvector('simple', ${hindiFoldSql(Prisma.sql`concat_ws(' ',
         p."commonName", p."scientificName", p."hindiName", p."sanskritName",
         array_to_string(p."otherNames", ' '), p.description, p."descriptionHi",
         p."ayurvedicProperties", array_to_string(p."traditionalUses", ' '),
         array_to_string(p."traditionalUsesHi", ' '), array_to_string(p."plantParts", ' '), p.family
-      )) AS doc
+      )`)}) AS doc
     ) d
     WHERE ${tsq ? Prisma.sql`d.doc @@ to_tsquery('simple', ${tsq}) OR` : Prisma.empty}
       p."commonName" ILIKE ${like} OR p."scientificName" ILIKE ${like}
-      OR p."hindiName" ILIKE ${like} OR p."sanskritName" ILIKE ${like}
+      OR ${fold(`p."hindiName"`)} ILIKE ${like} OR ${fold(`p."sanskritName"`)} ILIKE ${like}
     ORDER BY rank DESC
     LIMIT 200
   `);
