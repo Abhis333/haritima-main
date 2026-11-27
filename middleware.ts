@@ -34,6 +34,15 @@ function isSameOrigin(req: Request) {
   return site === null || site === "same-origin" || site === "none";
 }
 
+/** The site origin as the browser sees it: AUTH_URL if set, else the proxy's forwarded host, else the request URL. */
+function publicOrigin(req: Request & { nextUrl: URL }) {
+  const configured = process.env.AUTH_URL ? hostOf(process.env.AUTH_URL) && new URL(process.env.AUTH_URL).origin : null;
+  if (configured) return configured;
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  const proto = req.headers.get("x-forwarded-proto")?.split(",")[0].trim() ?? req.nextUrl.protocol.replace(":", "");
+  return host ? `${proto}://${host}` : req.nextUrl.origin;
+}
+
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 
@@ -45,9 +54,10 @@ export default auth((req) => {
 
   // First line of defence for admin pages. Every admin API re-checks the role on the server.
   if (pathname.startsWith("/admin") && req.auth?.user?.role !== "ADMIN") {
-    // Relative Location: behind Railway's proxy req.nextUrl.origin can be the internal https://localhost:8080.
-    const location = `/login?${new URLSearchParams({ callbackUrl: pathname })}`;
-    return new NextResponse(null, { status: 307, headers: { Location: location } });
+    // Middleware needs an absolute Location, but behind Railway's proxy req.nextUrl.origin is the internal
+    // https://localhost:8080, so the URL is built from the host the visitor actually used.
+    const url = new URL(`/login?${new URLSearchParams({ callbackUrl: pathname })}`, publicOrigin(req));
+    return NextResponse.redirect(url);
   }
   return NextResponse.next();
 });
