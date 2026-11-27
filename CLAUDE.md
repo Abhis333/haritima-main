@@ -38,7 +38,7 @@ Detailed per-feature summaries live in `docs/features/`. Read the relevant file 
 | Plant catalogue, search, categories | [docs/features/plants-catalogue.md](docs/features/plants-catalogue.md) | `app/(public)/plants`, `app/api/plants`, `lib/search.ts` |
 | "Ask Haritima" RAG chatbot | [docs/features/chatbot-rag.md](docs/features/chatbot-rag.md) | `lib/chat.ts`, `lib/rag.ts`, `lib/ai.ts`, `app/api/chat` |
 | Photo plant identification | [docs/features/plant-identification.md](docs/features/plant-identification.md) | `app/api/identify`, `lib/plantnet.ts` |
-| Campus map and locations | [docs/features/campus-map.md](docs/features/campus-map.md) | `components/PlantMap.tsx`, `lib/map-data.ts`, `app/api/locations` |
+| Campus map, places and walking routes | [docs/features/campus-map.md](docs/features/campus-map.md) | `components/PlantMap.tsx`, `components/MapGuide.tsx`, `components/map/*`, `lib/map-data.ts`, `lib/route.ts`, `app/api/locations`, `app/api/places`, `app/api/walk-route` |
 | Campus walking trails | [docs/features/walking-trails.md](docs/features/walking-trails.md) | `app/(public)/trails`, `lib/trails.ts`, `components/TrailMap.tsx`, `app/api/trails`, `app/api/trail-stops` |
 | Seasonal calendar | [docs/features/seasonal-calendar.md](docs/features/seasonal-calendar.md) | `app/(public)/seasons`, `components/SeasonStrip.tsx` |
 | Analytics (views, chatbot usage) | [docs/features/analytics.md](docs/features/analytics.md) | `lib/analytics.ts`, `app/api/views`, `app/admin/analytics`, `components/admin/Charts.tsx` |

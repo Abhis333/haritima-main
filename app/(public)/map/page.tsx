@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/server";
-import { getMapPoints } from "@/lib/map-data";
+import { getCampusPlaces, getMapPoints } from "@/lib/map-data";
 import { PlantMapLoader } from "@/components/PlantMapLoader";
 
 export const metadata: Metadata = { title: "Campus plant map", description: "Interactive map of plants on the Dev Sanskriti Vishwavidyalaya campus." };
 
 export default async function MapPage({ searchParams }: { searchParams: Promise<{ plant?: string; guide?: string }> }) {
   const { t, lang } = await getDictionary();
-  const [points, { plant, guide }] = await Promise.all([getMapPoints(lang), searchParams]);
+  const [points, places, { plant, guide }] = await Promise.all([getMapPoints(lang), getCampusPlaces(lang), searchParams]);
   const areas = [...new Set(points.map((p) => p.campusArea))];
   return (
     <div className="container-h py-10">
@@ -29,7 +29,7 @@ export default async function MapPage({ searchParams }: { searchParams: Promise<
       )}
       <div className="mt-6">
         {points.length ? (
-          <PlantMapLoader points={points} focusSlug={plant} autoGuide={guide === "1"} height="min(72vh, 720px)" />
+          <PlantMapLoader points={points} places={places} focusSlug={plant} autoGuide={guide === "1"} height="min(72vh, 720px)" />
         ) : (
           <p className="rounded-xl border border-dashed border-moss/60 p-12 text-center text-muted-foreground">No plant locations recorded yet. Add coordinates in Admin → Plant locations.</p>
         )}

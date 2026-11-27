@@ -4,9 +4,10 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Link from "next/link";
 import { useEffect } from "react";
-import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Marker, Polyline, Popup, useMap } from "react-leaflet";
 import { useLang } from "@/lib/i18n/client";
-import { CAMPUS_BOUNDS, CAMPUS_MAP_PROPS, TILE_ATTRIBUTION, TILE_URL } from "./PlantMap";
+import { CAMPUS_MAP_PROPS } from "@/lib/campus";
+import { Basemap } from "./map/Basemap";
 import type { TrailStopPoint } from "@/lib/trails";
 
 // Numbered stop marker; approximate locations get a dashed ring like on the main map.
@@ -34,7 +35,7 @@ export default function TrailMap({ stops, color, height = "60vh" }: { stops: Tra
   return (
     <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-sm" style={{ height }}>
       <MapContainer {...CAMPUS_MAP_PROPS} className="h-full w-full" aria-label={t.trails.route}>
-        <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} maxZoom={19} bounds={CAMPUS_BOUNDS} />
+        <Basemap />
         <Fit stops={stops} />
         <Polyline positions={stops.map((s) => [s.latitude, s.longitude])} pathOptions={{ color, weight: 3, opacity: 0.85, dashArray: "6 6" }} />
         {stops.map((s, i) => (

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { insideCampus } from "@/lib/campus";
+import { PLACE_KINDS } from "@/lib/places";
 
 export const MAX_LOCATION_PHOTOS = 6;
 
@@ -70,6 +72,22 @@ export const locationSchema = z.object({
     .max(MAX_LOCATION_PHOTOS, `At most ${MAX_LOCATION_PHOTOS} photos`)
     .optional(),
 });
+
+export const placeSchema = z.object({
+  name: text(120).min(2),
+  nameHi: optText(120),
+  kind: z.enum(PLACE_KINDS).default("OTHER"),
+  description: optText(500),
+  descriptionHi: optText(500),
+  // Places must lie on the campus map, otherwise they could never be shown or routed to.
+  latitude: z.coerce.number().min(-90).max(90),
+  longitude: z.coerce.number().min(-180).max(180),
+  isApproximate: z.boolean().default(true),
+  photos: z
+    .array(z.string().trim().url().refine((u) => u.startsWith("https://"), "Must be an https URL"))
+    .max(MAX_LOCATION_PHOTOS, `At most ${MAX_LOCATION_PHOTOS} photos`)
+    .optional(),
+}).refine((p) => insideCampus(p.latitude, p.longitude), { message: "The place must be inside the campus map area.", path: ["latitude"] });
 
 export const referenceSchema = z.object({
   plantId: z.string().cuid(),
